@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -15,8 +15,21 @@ import {
   Clock,
   ArrowRight,
   Target,
-  Sparkles
+  Sparkles,
+  Zap,
+  ChevronRight,
+  BarChart3,
+  Calendar
 } from "lucide-react";
+import { 
+  ResponsiveContainer, 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip as RechartsTooltip 
+} from "recharts";
 import { logout } from "../../features/auth/authSlice";
 import Button from "../../shared/components/Button";
 import Navbar from "../../shared/landing/Navbar";
@@ -26,6 +39,93 @@ const ROLE_LABELS = {
   student: "Student",
   tutor: "Tutor",
   recruiter: "Recruiter",
+};
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900 border border-white/10 p-3 rounded-lg shadow-xl backdrop-blur-md">
+        <p className="text-xs text-slate-400 mb-1">{payload[0].payload.fullDate}</p>
+        <p className="text-sm font-bold text-blue-400">Score: {payload[0].value}%</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const SuggestionItem = ({ suggestion }) => {
+  // Handle both string and object formats for robustness
+  const text = typeof suggestion === "string" ? suggestion : (suggestion?.text || "");
+  const priority = suggestion?.priority || "";
+
+  const suggestionDetails = useMemo(() => {
+    const safeText = text.toLowerCase();
+    
+    if (priority === "Critical" || safeText.includes("urgent") || safeText.includes("missing")) {
+      return {
+        icon: <AlertCircle size={16} className="text-red-400" />,
+        bg: "bg-red-500/5",
+        border: "border-red-500/20",
+        label: "Critical Action",
+        textColor: "text-red-300"
+      };
+    }
+    
+    if (priority === "Strategic" || safeText.includes("add") || safeText.includes("integrate") || safeText.includes("projects")) {
+      return {
+        icon: <Sparkles size={16} className="text-blue-400" />,
+        bg: "bg-blue-500/5",
+        border: "border-blue-500/20",
+        label: "Strategic Tip",
+        textColor: "text-blue-300"
+      };
+    }
+
+    if (priority === "Optimization" || safeText.includes("metric") || safeText.includes("measure") || safeText.includes("highlight")) {
+      return {
+        icon: <TrendingUp size={16} className="text-emerald-400" />,
+        bg: "bg-emerald-500/5",
+        border: "border-emerald-500/20",
+        label: "Growth Area",
+        textColor: "text-emerald-300"
+      };
+    }
+
+    return {
+      icon: <Zap size={16} className="text-amber-400" />,
+      bg: "bg-amber-500/5",
+      border: "border-amber-500/20",
+      label: "Critical Action",
+      textColor: "text-amber-300"
+    };
+  }, [suggestion, text, priority]);
+
+  const { icon, bg, border, label, textColor } = suggestionDetails;
+
+  return (
+    <div className={`group flex flex-col gap-2 p-4 rounded-xl border ${bg} ${border} transition-all duration-300 hover:bg-white/[0.02]`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className={`p-1.5 rounded-lg ${bg} border border-white/5`}>
+            {icon}
+          </div>
+          <span className={`text-[10px] font-bold uppercase tracking-widest ${textColor}`}>{label}</span>
+        </div>
+        <ChevronRight size={14} className="text-slate-600 group-hover:translate-x-0.5 transition-transform" />
+      </div>
+      <p className="text-sm text-slate-300 leading-relaxed font-medium">
+        {text.split(' ').map((word, i) => {
+          const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
+          const isHighlight = ['skills', 'projects', 'metrics', 'achievements', 'keywords', 'experience', 'ats', 'readability'].includes(cleanWord);
+          return (
+            <span key={i} className={isHighlight ? 'text-white font-bold' : ''}>
+              {word}{' '}
+            </span>
+          );
+        })}
+      </p>
+    </div>
+  );
 };
 
 const DashboardPage = () => {
@@ -52,6 +152,18 @@ const DashboardPage = () => {
     fetchHistory();
   }, []);
 
+  const chartData = useMemo(() => {
+    return [...history].reverse().map(item => ({
+      date: new Date(item.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+      score: item.score,
+      fullDate: new Date(item.createdAt).toLocaleDateString(undefined, { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      })
+    }));
+  }, [history]);
+
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login", { replace: true });
@@ -69,7 +181,7 @@ const DashboardPage = () => {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
-              <p className="text-xs sm:text-sm font-medium text-blue-300 uppercase tracking-wider">Skill Tracking Dashboard</p>
+              <p className="text-xs sm:text-sm font-medium text-blue-300 uppercase tracking-wider">Professional Intelligence</p>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
               Welcome, {user?.name || "Learner"}
@@ -125,14 +237,75 @@ const DashboardPage = () => {
           </div>
         </section>
 
-        {/* Latest Analysis Summary */}
+        {/* Analytics Section */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            
+            {/* Score Trend Chart */}
             <div className="rounded-2xl border border-white/10 bg-slate-900/50 overflow-hidden backdrop-blur-md">
               <div className="border-b border-white/5 bg-white/5 px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Activity className="text-blue-400" size={20} />
-                  <h2 className="text-lg font-bold">Latest Analysis Overview</h2>
+                  <BarChart3 className="text-blue-400" size={20} />
+                  <h2 className="text-lg font-bold">Performance Trend</h2>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-white/5 px-2 py-1 rounded-md">
+                  <Calendar size={12} />
+                  <span>Last {history.length} Analyses</span>
+                </div>
+              </div>
+              <div className="p-6 h-[280px] min-h-[280px] w-full">
+                {history.length > 1 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData}>
+                      <defs>
+                        <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                      <XAxis 
+                        dataKey="date" 
+                        stroke="#94a3b8" 
+                        fontSize={10} 
+                        tickLine={false} 
+                        axisLine={false}
+                        dy={10}
+                      />
+                      <YAxis 
+                        stroke="#94a3b8" 
+                        fontSize={10} 
+                        tickLine={false} 
+                        axisLine={false}
+                        domain={[0, 100]}
+                        tickFormatter={(val) => `${val}%`}
+                      />
+                      <RechartsTooltip content={<CustomTooltip />} />
+                      <Area 
+                        type="monotone" 
+                        dataKey="score" 
+                        stroke="#3b82f6" 
+                        strokeWidth={2}
+                        fillOpacity={1} 
+                        fill="url(#colorScore)" 
+                        animationDuration={1500}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-500">
+                    <Activity size={40} className="opacity-20 mb-3" />
+                    <p className="text-sm">Need at least 2 analyses to show trend</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-slate-900/50 overflow-hidden backdrop-blur-md">
+              <div className="border-b border-white/5 bg-white/5 px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="text-emerald-400" size={20} />
+                  <h2 className="text-lg font-bold">Latest Analysis Summary</h2>
                 </div>
                 {latestAnalysis && (
                   <span className="text-xs font-medium text-slate-400 flex items-center gap-1">
@@ -194,63 +367,33 @@ const DashboardPage = () => {
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Target Skills Match</p>
                         <div className="flex flex-wrap gap-2">
                           {latestAnalysis.skills.slice(0, 5).map((skill, idx) => (
-                            <span key={idx} className="px-2 py-1 rounded-md bg-blue-500/10 text-blue-400 text-xs font-medium border border-blue-500/20">
+                            <span key={idx} className="px-2 py-1 rounded-md bg-blue-500/10 text-blue-400 text-[10px] font-bold border border-blue-500/20 uppercase tracking-tight">
                               {skill}
                             </span>
                           ))}
                           {latestAnalysis.skills.length > 5 && (
-                            <span className="text-xs text-slate-500 self-center">+{latestAnalysis.skills.length - 5} more</span>
+                            <span className="text-[10px] text-slate-500 self-center font-bold">+{latestAnalysis.skills.length - 5} MORE</span>
                           )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Missing Skills and Suggestions */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-red-400">
-                          <AlertCircle size={18} />
-                          <h3 className="font-bold">Missing Skills</h3>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {latestAnalysis.missingSkills.length > 0 ? (
-                            latestAnalysis.missingSkills.map((skill, idx) => (
-                              <span key={idx} className="px-2 py-1 rounded-md bg-red-500/10 text-red-400 text-xs font-medium border border-red-500/20">
-                                {skill}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-sm text-slate-400 italic">No missing skills identified</span>
-                          )}
-                        </div>
+                    {/* Missing Skills */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-red-400">
+                        <AlertCircle size={18} />
+                        <h3 className="font-bold text-sm uppercase tracking-widest">Priority Gaps</h3>
                       </div>
-
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-emerald-400">
-                          <Target size={18} />
-                          <h3 className="font-bold">Key Suggestions</h3>
-                        </div>
-                        <ul className="space-y-3">
-                          {latestAnalysis.suggestions.slice(0, 3).map((suggestion, idx) => {
-                            const isObject = typeof suggestion === "object" && suggestion !== null;
-                            const text = isObject ? suggestion.text : suggestion;
-                            const priority = isObject ? suggestion.priority : "Suggestion";
-                            
-                            return (
-                              <li key={idx} className="flex flex-col gap-1">
-                                <div className="flex items-center gap-2">
-                                  <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                                    priority === "Critical" ? "bg-red-500" : "bg-emerald-500"
-                                  }`}></span>
-                                  <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest">{priority}</span>
-                                </div>
-                                <p className="text-sm text-slate-300 pl-3.5 leading-relaxed">
-                                  {text}
-                                </p>
-                              </li>
-                            );
-                          })}
-                        </ul>
+                      <div className="flex flex-wrap gap-2">
+                        {latestAnalysis.missingSkills.length > 0 ? (
+                          latestAnalysis.missingSkills.map((skill, idx) => (
+                            <span key={idx} className="px-3 py-1.5 rounded-lg bg-red-500/5 text-red-400 text-xs font-bold border border-red-500/20 uppercase tracking-wide">
+                              {skill}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-sm text-slate-400 italic">No missing skills identified</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -271,11 +414,11 @@ const DashboardPage = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-800/30 text-xs uppercase tracking-wider text-slate-500">
-                      <th className="px-6 py-3 font-bold">Date</th>
-                      <th className="px-6 py-3 font-bold">Score</th>
-                      <th className="px-6 py-3 font-bold">Level</th>
-                      <th className="px-6 py-3 font-bold">Status</th>
+                    <tr className="bg-slate-800/30 text-[10px] uppercase tracking-widest text-slate-500">
+                      <th className="px-6 py-4 font-bold">Date</th>
+                      <th className="px-6 py-4 font-bold">Score</th>
+                      <th className="px-6 py-4 font-bold">Level</th>
+                      <th className="px-6 py-4 font-bold">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
@@ -291,7 +434,7 @@ const DashboardPage = () => {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm whitespace-nowrap">
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
                               item.classification.includes("Strong") || item.classification === "Advanced"
                                 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                                 : item.classification === "Intermediate"
@@ -304,14 +447,14 @@ const DashboardPage = () => {
                           <td className="px-6 py-4 text-sm whitespace-nowrap">
                              <div className="flex items-center gap-1.5 text-emerald-500">
                                <CheckCircle size={14} />
-                               <span className="text-xs font-medium">Completed</span>
+                               <span className="text-[10px] font-bold uppercase tracking-wide">Processed</span>
                              </div>
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="4" className="px-6 py-8 text-center text-slate-500 text-sm">
+                        <td colSpan="4" className="px-6 py-12 text-center text-slate-500 text-sm">
                           No history found
                         </td>
                       </tr>
@@ -323,6 +466,26 @@ const DashboardPage = () => {
           </div>
 
           <div className="space-y-6">
+            {/* Smart Suggestions Card */}
+            <div className="rounded-2xl border border-white/10 bg-slate-900/50 overflow-hidden backdrop-blur-md">
+              <div className="border-b border-white/5 bg-white/5 px-6 py-4 flex items-center gap-2">
+                <Target className="text-emerald-400" size={20} />
+                <h2 className="text-lg font-bold">Smart Insights</h2>
+              </div>
+              <div className="p-4 space-y-4">
+                {latestAnalysis && latestAnalysis.suggestions.length > 0 ? (
+                  latestAnalysis.suggestions.map((suggestion, idx) => (
+                    <SuggestionItem key={idx} suggestion={suggestion} />
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-slate-500">
+                    <Zap size={24} className="mx-auto mb-2 opacity-20" />
+                    <p className="text-xs uppercase tracking-widest">No insights generated yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Quick Actions Card */}
             <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-blue-600/20 to-blue-900/40 p-6 shadow-xl backdrop-blur-md relative overflow-hidden group">
               <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 bg-blue-500/20 rounded-full blur-3xl group-hover:bg-blue-500/40 transition-all"></div>
@@ -341,7 +504,7 @@ const DashboardPage = () => {
                 >
                   <div className="flex items-center gap-3">
                     <FileText size={18} className="text-blue-300" />
-                    <span className="font-semibold">Update Resume</span>
+                    <span className="font-semibold text-sm">Update Resume</span>
                   </div>
                   <ArrowRight size={16} className="text-blue-300 group-hover/link:translate-x-1 transition-transform" />
                 </Link>
@@ -352,7 +515,7 @@ const DashboardPage = () => {
                 >
                   <div className="flex items-center gap-3">
                     <Target size={18} className="text-emerald-300" />
-                    <span className="font-semibold">Find Matches</span>
+                    <span className="font-semibold text-sm">Find Matches</span>
                   </div>
                   <ArrowRight size={16} className="text-emerald-300 group-hover/link:translate-x-1 transition-transform" />
                 </Link>
@@ -361,7 +524,7 @@ const DashboardPage = () => {
 
             {/* Account Status */}
             <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-6 backdrop-blur-md">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Account Status</h3>
+              <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Account Status</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                    <div className="flex items-center gap-3">
