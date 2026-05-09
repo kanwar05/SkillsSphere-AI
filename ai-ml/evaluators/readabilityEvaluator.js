@@ -10,7 +10,7 @@ export default function readabilityEvaluator({ resumeText = "", weight = 0.1 }) 
   // Clean bullet point prefixes from sentence start (fixes #230)
   // Handles common bullet characters from PDF extraction: •, –, *, en-dash, em-dash
   function cleanSentenceStart(sentence) {
-    return sentence.replace(/^[\s\u2022-*\u2013\u2014•]+/, '').trim();
+    return sentence.replace(/^[\s\u2022\*\u2013\u2014•\-]+/, '').trim();
   }
 
   const sentences = resumeText

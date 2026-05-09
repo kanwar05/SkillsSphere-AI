@@ -6,6 +6,7 @@ import { keywordEvaluator } from "../evaluators/keywordEvaluator.js";
 import readabilityEvaluator from "../evaluators/readabilityEvaluator.js";
 import { skillEvaluator } from "../evaluators/skillEvaluator.js";
 import { techStandardEvaluator } from "../evaluators/techStandardEvaluator.js";
+import { semanticEvaluator } from "../evaluators/semanticEvaluator.js";
 import gapAnalyzer from "../utils/gapAnalyzer.js";
 import { classifyResume } from "../utils/resumeClassifier.js";
 import { aggregateResults } from "./aggregator.js";
@@ -114,6 +115,39 @@ export async function runPipeline({
 
   evaluations.push(experienceMatch);
 
+  // 🌀 Semantic Match
+  const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
+  let semanticMatch;
+
+  if (!isJDProvided) {
+    semanticMatch = {
+      score: null,
+      name: "semanticMatch",
+      message: "No job description provided",
+    };
+  } else if (!hasOpenAIKey) {
+    semanticMatch = {
+      score: 0,
+      name: "semanticMatch",
+      key: "semanticMatch",
+      label: "Semantic Match",
+      weight: 0,
+      weightedScore: 0,
+      summary: "Semantic evaluation skipped — no API key",
+      details: {},
+      meta: {},
+    };
+  } else {
+    semanticMatch = await safeEval("semanticMatch", () =>
+      semanticEvaluator({
+        resumeText,
+        jobDescription,
+      }),
+    );
+  }
+
+  evaluations.push(semanticMatch);
+
   // 🟣 Consistency Match
   const consistencyMatch = await safeEval("consistencyMatch", () =>
     consistencyEvaluator({
@@ -192,6 +226,7 @@ export async function runPipeline({
     skillMatch,
     keywordMatch,
     experienceMatch,
+    semanticMatch,
     consistencyMatch,
     readabilityMatch,
     impactMatch,

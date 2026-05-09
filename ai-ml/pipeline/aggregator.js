@@ -6,8 +6,9 @@ export function aggregateResults(evaluations, isJDProvided = true) {
   // Dynamic Weights Map
   const weights = isJDProvided 
     ? {
-        skillMatch: 0.3,
-        keywordMatch: 0.2,
+        skillMatch: 0.15,
+        semanticMatch: 0.20,
+        keywordMatch: 0.15,
         experienceMatch: 0.1,
         impactMatch: 0.15,
         atsOptimization: 0.1,
