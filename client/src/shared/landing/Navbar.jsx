@@ -11,6 +11,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [theme, setTheme] = useState(() => {
     if (typeof window === 'undefined') return 'dark';
@@ -80,7 +81,7 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden lg:flex gap-10 items-center">
-          {navLinks.filter(link => link.name !== 'Dashboard').map((link) => (
+          {navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}

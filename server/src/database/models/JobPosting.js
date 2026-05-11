@@ -127,7 +127,14 @@ const jobPostingSchema = new mongoose.Schema(
 
 // Cross-field validation: ensure salary.max >= salary.min
 jobPostingSchema.path("salary.max").validate(function (value) {
-  return value >= this.salary.min;
+  // During updates, 'this' might not have the full salary object if it's a partial update
+  // Check if salary and salary.min are available before comparing
+  if (this.salary && typeof this.salary.min === 'number') {
+    return value >= this.salary.min;
+  }
+  // If we can't perform the cross-field check, we let it pass here
+  // (The required validators on min/max will still catch missing values)
+  return true;
 }, "Maximum salary must be greater than or equal to minimum salary");
 
 // Indexes for efficient filtering
