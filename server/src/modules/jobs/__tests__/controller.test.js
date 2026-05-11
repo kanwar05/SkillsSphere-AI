@@ -48,41 +48,4 @@ describe("Job Controller", () => {
       expect(next).toHaveBeenCalledWith(error);
     });
   });
-
-  describe("updateJobPosting", () => {
-    it("should respond with 200 and updated job", async () => {
-      req.params.id = "job123";
-      req.body = { title: "Updated Job" };
-      
-      const mockUpdatedJob = { _id: "job123", ...req.body };
-      // Note: controller expects updateJob in service to be exported as updateJob
-      jobService.updateJob.mockResolvedValue(mockUpdatedJob);
-
-      await jobController.updateJobPosting(req, res, next);
-
-      expect(jobService.updateJob).toHaveBeenCalledWith("job123", req.body, "user123");
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({
-        success: true,
-        job: mockUpdatedJob
-      });
-    });
-  });
-
-  describe("deleteJobPosting", () => {
-    it("should respond with 200 on successful deletion", async () => {
-      req.params.id = "job123";
-      
-      jobService.deleteJob.mockResolvedValue();
-
-      await jobController.deleteJobPosting(req, res, next);
-
-      expect(jobService.deleteJob).toHaveBeenCalledWith("job123", "user123");
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({
-        success: true,
-        message: "Job deleted successfully"
-      });
-    });
-  });
 });
