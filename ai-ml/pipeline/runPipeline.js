@@ -11,6 +11,8 @@ import gapAnalyzer from "../utils/gapAnalyzer.js";
 import { classifyResume } from "../utils/resumeClassifier.js";
 import { aggregateResults } from "./aggregator.js";
 import { validateEvaluatorResult } from "./evaluatorContract.js";
+import { extractSkillsFromText } from "../utils/skillNormalizer.js";
+import techKeywords from "../config/keywords.js";
 
 
 export async function runPipeline({
@@ -61,6 +63,13 @@ export async function runPipeline({
   }
 
   const isJDProvided = !!(jobDescription && jobDescription.trim().length > 0);
+  
+  // 🔥 AUTO-EXTRACT: If only JD text is provided, extract the skill array for evaluators
+  let finalJobSkills = jobSkills;
+  if (isJDProvided && (!jobSkills || jobSkills.length === 0)) {
+    const allKeywords = Object.values(techKeywords).flat();
+    finalJobSkills = extractSkillsFromText(jobDescription, allKeywords);
+  }
   const evaluations = [];
 
   const resumeText = resumeData.resumeText || "";
@@ -70,7 +79,7 @@ export async function runPipeline({
     ? await safeEval("skillMatch", () =>
         skillEvaluator({
           resumeSkills: resumeData.skills || [],
-          jobSkills,
+          jobSkills: finalJobSkills,
         }),
       )
     : {
@@ -88,7 +97,7 @@ export async function runPipeline({
           resumeText,
           jobDescription,
           resumeSkills: resumeData.skills || [],
-          jobSkills,
+          jobSkills: finalJobSkills,
         }),
       )
     : {

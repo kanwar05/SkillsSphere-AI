@@ -111,3 +111,36 @@ export const normalizeSkillArray = (skills) => {
     
   return [...new Set(normalized)];
 };
+
+/**
+ * Extracts known skills from raw text by matching against SKILL_MAP keys and a master keyword list.
+ * @param {string} text - The raw text (e.g. Job Description)
+ * @param {string[]} masterList - Array of all known technical keywords
+ * @returns {string[]} Array of normalized skills found in the text
+ */
+export const extractSkillsFromText = (text = "", masterList = []) => {
+  if (!text) return [];
+  
+  const lowerText = text.toLowerCase()
+    .replace(/[^\w\s.+#]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Combine SKILL_MAP keys with master list for maximum coverage
+  const searchTerms = [...new Set([
+    ...Object.keys(SKILL_MAP),
+    ...masterList.map(k => k.toLowerCase())
+  ])];
+
+  const found = searchTerms.filter(term => {
+    // For short terms, use boundary check
+    if (term.length <= 3) {
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(^|[^a-zA-Z0-9+#.])${escaped}([^a-zA-Z0-9+#.]|$)`, 'i');
+      return regex.test(lowerText);
+    }
+    return lowerText.includes(term);
+  });
+
+  return normalizeSkillArray(found);
+};

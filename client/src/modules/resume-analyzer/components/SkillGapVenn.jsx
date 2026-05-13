@@ -1,0 +1,112 @@
+import React from "react";
+import { User, Briefcase, Zap, AlertCircle, CheckCircle2 } from "lucide-react";
+
+const SkillGapVenn = ({ skillMatch = {}, isJDProvided = false }) => {
+  if (!isJDProvided) return null;
+
+  const { matchedSkills = [], missingSkills = [], extraSkills = [] } = skillMatch.details || {};
+  const matchedCount = matchedSkills.length;
+  const missingCount = missingSkills.length;
+  const extraCount = extraSkills.length;
+
+  return (
+    <div className="bg-surface border border-border rounded-[2rem] p-8 shadow-xl relative overflow-hidden">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="p-2 bg-primary/10 rounded-lg">
+          <Zap className="w-5 h-5 text-primary" />
+        </div>
+        <h3 className="text-xl font-bold text-text-main">Visual Skill Gap</h3>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        {/* Venn Diagram Visual */}
+        <div className="relative flex justify-center py-8">
+          <svg viewBox="0 0 400 240" className="w-full max-w-[400px]">
+            <defs>
+              <filter id="shadow">
+                <feDropShadow dx="0" dy="4" stdDeviation="4" floodOpacity="0.3" />
+              </filter>
+              <linearGradient id="resumeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#6366f1" stopOpacity="0.05" />
+              </linearGradient>
+              <linearGradient id="jobGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#10b981" stopOpacity="0.05" />
+              </linearGradient>
+            </defs>
+
+            {/* Resume Circle */}
+            <circle 
+              cx="160" cy="120" r="100" 
+              fill="url(#resumeGrad)" 
+              stroke="#6366f1" 
+              strokeWidth="2" 
+              strokeDasharray="4 4"
+            />
+            <text x="100" y="50" className="text-[10px] font-black uppercase fill-slate-400">Your Resume</text>
+            
+            {/* Job Circle */}
+            <circle 
+              cx="240" cy="120" r="100" 
+              fill="url(#jobGrad)" 
+              stroke="#10b981" 
+              strokeWidth="2" 
+            />
+            <text x="245" y="50" className="text-[10px] font-black uppercase fill-emerald-500">Job Description</text>
+
+            {/* Overlap Text */}
+            <text x="200" y="130" textAnchor="middle" className="text-2xl font-black fill-white shadow-lg">
+              {matchedCount}
+            </text>
+            <text x="200" y="145" textAnchor="middle" className="text-[8px] font-black uppercase fill-slate-400">Matches</text>
+            
+            {/* Counts */}
+            <text x="100" y="130" textAnchor="middle" className="text-xl font-bold fill-slate-400">{extraCount}</text>
+            <text x="100" y="145" textAnchor="middle" className="text-[8px] font-black uppercase fill-slate-500">Unrequired</text>
+            
+            <text x="300" y="130" textAnchor="middle" className="text-xl font-bold fill-red-400">{missingCount}</text>
+            <text x="300" y="145" textAnchor="middle" className="text-[8px] font-black uppercase fill-red-400/50">Gaps</text>
+          </svg>
+        </div>
+
+        {/* Breakdown List */}
+        <div className="space-y-6">
+          {/* Matched */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-emerald-500">
+              <CheckCircle2 size={16} />
+              <span className="text-xs font-black uppercase tracking-widest">Matched Expertise ({matchedCount})</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {matchedSkills.slice(0, 8).map((skill, i) => (
+                <span key={i} className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-bold rounded-lg">
+                  {skill}
+                </span>
+              ))}
+              {matchedCount > 8 && <span className="text-[10px] text-slate-500 font-bold">+{matchedCount - 8} more</span>}
+            </div>
+          </div>
+
+          {/* Missing */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-red-400">
+              <AlertCircle size={16} />
+              <span className="text-xs font-black uppercase tracking-widest">Critical Gaps ({missingCount})</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {missingSkills.slice(0, 8).map((skill, i) => (
+                <span key={i} className="px-2 py-1 bg-red-400/5 border border-red-400/20 text-red-400 text-[10px] font-bold rounded-lg">
+                  {skill}
+                </span>
+              ))}
+              {missingCount > 8 && <span className="text-[10px] text-red-400/50 font-bold">+{missingCount - 8} more</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SkillGapVenn;

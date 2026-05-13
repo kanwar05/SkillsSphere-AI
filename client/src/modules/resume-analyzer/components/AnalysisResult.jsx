@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "../../../shared/landing/Button";
+import SkillGapVenn from "./SkillGapVenn";
 
 const AnalysisResult = ({ result, file, onReset }) => {
   const score = result?.score || 0;
@@ -161,7 +162,11 @@ const AnalysisResult = ({ result, file, onReset }) => {
         </div>
       </div>
 
-
+      {/* Visual Skill Gap Venn Diagram */}
+      <SkillGapVenn 
+        skillMatch={result.skillMatch} 
+        isJDProvided={isJDProvided} 
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Suggestions & Keywords */}
