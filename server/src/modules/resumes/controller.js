@@ -16,6 +16,7 @@ import {
 } from "../../utils/normalizeResumeResponse.js";
 import * as resumeService from "./service.js";
 import AnalysisHistory from "../../database/models/AnalysisHistory.js";
+import { verifyLinks } from "../../utils/linkVerifier.js";
 
 const defaultDependencies = {
   parseResume,
@@ -101,6 +102,15 @@ export const analyzeResume = async (req, res) => {
       evaluators.push(semanticMatchEvaluator);
     }
     evaluators.push(experienceMatchEvaluator);
+    
+    // 🔗 LINK VERIFICATION: Check if extracted links are alive
+    const linksToVerify = [
+      parsedData.linkedin,
+      parsedData.github,
+      parsedData.portfolio
+    ].filter(Boolean);
+    const verifiedLinks = await verifyLinks(linksToVerify);
+
     // 🔥 Normalize everything
     const safeData = normalizeResumeData(parsedData);
     const safePipeline = normalizePipelineResult(pipelineResult);
@@ -153,6 +163,7 @@ export const analyzeResume = async (req, res) => {
       resumeId: savedResume._id,
       data: safeData,
       ...safePipeline, // 🔥 single source of truth
+      verifiedLinks,
       file: savedResume.file,
     });
   } catch (error) {

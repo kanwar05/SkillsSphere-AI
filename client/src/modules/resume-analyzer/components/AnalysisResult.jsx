@@ -8,8 +8,10 @@ import {
   Sparkles,
   Zap,
   ShieldCheck,
+  ExternalLink,
   Layout,
-  MessageSquare
+  MessageSquare,
+  Globe
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "../../../shared/landing/Button";
@@ -159,6 +161,45 @@ const AnalysisResult = ({ result, file, onReset }) => {
               </div>
             ))}
           </div>
+
+          {/* 🔗 Verified Links Section */}
+          {result.verifiedLinks && result.verifiedLinks.length > 0 && (
+            <div className="mt-8 pt-8 border-t border-border/50">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted mb-4">Verified Profiles</h3>
+              <div className="space-y-3">
+                {result.verifiedLinks.map((link, i) => (
+                  <div key={i} className="flex items-center justify-between gap-4 p-3 bg-dark-bg/40 border border-border rounded-2xl group hover:border-primary/40 transition-all shadow-sm">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`p-2 rounded-xl shrink-0 ${link.isValid ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                        <Globe size={14} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold text-text-main truncate pr-2" title={link.url}>
+                          {link.url.replace(/^https?:\/\/(www\.)?/, '')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                       {link.isValid ? (
+                         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg shadow-sm">
+                            <ShieldCheck size={10} className="text-emerald-400" />
+                            <span className="text-[8px] font-black uppercase tracking-tight text-emerald-400">Verified</span>
+                         </div>
+                       ) : (
+                         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 border border-red-500/20 rounded-lg shadow-sm">
+                            <AlertCircle size={10} className="text-red-400" />
+                            <span className="text-[8px] font-black uppercase tracking-tight text-red-400">Dead Link</span>
+                         </div>
+                       )}
+                       <a href={link.url} target="_blank" rel="noreferrer" className="p-2 hover:bg-white/10 rounded-xl text-text-muted hover:text-primary transition-all">
+                         <ExternalLink size={12} />
+                       </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

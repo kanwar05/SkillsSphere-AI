@@ -17,9 +17,9 @@ const sectionHeaders = {
 
 const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
 const phoneRegex = /(?:\+?\d{1,3}[\s-]?)?(?:\(?\d{3,5}\)?[\s-]?)?\d{6,10}\b/g;
-const linkedinRegex = /(https?:\/\/)?(www\.)?linkedin\.com\/[^\s)]+/gi;
-const githubRegex = /(https?:\/\/)?(www\.)?github\.com\/[^\s)]+/gi;
-const urlRegex = /(https?:\/\/[^\s)]+)/gi;
+const linkedinRegex = /(https?:\/\/)?(www\.)?linkedin\.com\/[^\s)\]]+/gi;
+const githubRegex = /(https?:\/\/)?(www\.)?github\.com\/[^\s)\]]+/gi;
+const urlRegex = /(https?:\/\/[^\s)\]]+)/gi;
 const portfolioKeywords = ["portfolio", "vercel.app", "netlify.app", ".dev", ".io", ".me", ".site", ".tech", "github.io"];
 
 const normalizeWhitespace = (text) => text.replace(/\r/g, "\n").replace(/\n{2,}/g, "\n").trim();
@@ -29,7 +29,7 @@ const normalizeUrl = (url) => {
   return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
 };
 
-const cleanupUrl = (url) => (url || "").replace(/[),.;]+$/, "").trim();
+const cleanupUrl = (url) => (url || "").replace(/[\][),.;]+$/, "").trim();
 
 const isLikelyPortfolioUrl = (url) => {
   if (!url) return false;
