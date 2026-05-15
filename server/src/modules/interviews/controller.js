@@ -7,6 +7,7 @@ import {
   getSessionResults as getResults,
   listAvailableTopics,
 } from "./service.js";
+import { getServiceStatus } from "../../integrations/aiInterviewService.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 import AppError from "../../utils/AppError.js";
 
@@ -156,5 +157,19 @@ export const getAvailableTopics = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     data: topics,
+  });
+});
+
+/**
+ * @desc    Get AI service connection status
+ * @route   GET /api/interviews/ai-status
+ * @access  Private
+ */
+export const getAIServiceStatus = asyncHandler(async (req, res) => {
+  const status = await getServiceStatus();
+
+  res.status(200).json({
+    success: true,
+    data: status,
   });
 });
