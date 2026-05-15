@@ -1,0 +1,210 @@
+[
+  {
+    "topic": "react",
+    "subtopic": "virtual-dom",
+    "difficulty": "easy",
+    "questionText": "What is the Virtual DOM in React and why is it used?",
+    "expectedAnswer": "The Virtual DOM is a lightweight JavaScript representation of the real DOM. React uses it to batch and optimize updates — instead of directly manipulating the browser DOM (which is slow), React compares the new Virtual DOM with the previous one (diffing), and only applies the minimal changes needed (reconciliation). This makes UI updates faster and more efficient.",
+    "expectedConcepts": ["virtual-dom", "diffing", "reconciliation", "performance"]
+  },
+  {
+    "topic": "react",
+    "subtopic": "hooks",
+    "difficulty": "easy",
+    "questionText": "What are React Hooks and why were they introduced?",
+    "expectedAnswer": "Hooks are functions that let you use state and lifecycle features in functional components without writing class components. They were introduced in React 16.8 to simplify component logic, make code more reusable through custom hooks, and avoid the complexity of class-based patterns like higher-order components and render props.",
+    "expectedConcepts": ["hooks", "functional-components", "state", "lifecycle", "reusability"]
+  },
+  {
+    "topic": "react",
+    "subtopic": "hooks",
+    "difficulty": "medium",
+    "questionText": "Explain the difference between useEffect and useLayoutEffect.",
+    "expectedAnswer": "Both run side effects after render, but useEffect runs asynchronously after the browser has painted the screen, while useLayoutEffect runs synchronously before the browser paints. useLayoutEffect is used when you need to read or modify DOM layout before the user sees the update — like measuring element dimensions. useEffect is preferred for most cases because it doesn't block the browser from painting.",
+    "expectedConcepts": ["useEffect", "useLayoutEffect", "side-effects", "paint", "synchronous", "dom-measurement"]
+  },
+  {
+    "topic": "react",
+    "subtopic": "state-management",
+    "difficulty": "medium",
+    "questionText": "What is prop drilling and how can you solve it?",
+    "expectedAnswer": "Prop drilling is when you pass data through multiple levels of components just to get it to a deeply nested child, even though intermediate components don't need it. Solutions include React Context API for sharing global state, state management libraries like Redux or Zustand, or component composition patterns where you restructure components to avoid deep nesting.",
+    "expectedConcepts": ["prop-drilling", "context-api", "state-management", "component-composition"]
+  },
+  {
+    "topic": "react",
+    "subtopic": "performance",
+    "difficulty": "hard",
+    "questionText": "How does React.memo work and when would you use it?",
+    "expectedAnswer": "React.memo is a higher-order component that memoizes functional components — it prevents re-rendering if the props haven't changed. It does a shallow comparison of props by default. You would use it for expensive components that receive the same props frequently. However, overusing it can hurt performance because the comparison itself has a cost. You can also pass a custom comparison function as a second argument.",
+    "expectedConcepts": ["react-memo", "memoization", "shallow-comparison", "re-rendering", "optimization"]
+  },
+  {
+    "topic": "react",
+    "subtopic": "hooks",
+    "difficulty": "hard",
+    "questionText": "Explain the useCallback and useMemo hooks. When should you use each?",
+    "expectedAnswer": "useMemo memoizes a computed value — it only recalculates when its dependencies change. useCallback memoizes a function reference — it returns the same function instance unless dependencies change. Use useMemo for expensive calculations that you don't want to repeat on every render. Use useCallback when passing callbacks to child components wrapped in React.memo, so the child doesn't re-render due to a new function reference.",
+    "expectedConcepts": ["useCallback", "useMemo", "memoization", "dependencies", "referential-equality"]
+  },
+  {
+    "topic": "react",
+    "subtopic": "rendering",
+    "difficulty": "medium",
+    "questionText": "What is the difference between controlled and uncontrolled components?",
+    "expectedAnswer": "Controlled components have their form data managed by React state — every input change triggers a state update via onChange, and the value is always driven by state. Uncontrolled components let the DOM handle the form data — you use refs to access values when needed. Controlled components give you more control for validation and dynamic behavior, while uncontrolled components are simpler for basic forms.",
+    "expectedConcepts": ["controlled-components", "uncontrolled-components", "state", "refs", "forms"]
+  },
+  {
+    "topic": "react",
+    "subtopic": "lifecycle",
+    "difficulty": "medium",
+    "questionText": "How do you handle cleanup in useEffect?",
+    "expectedAnswer": "You return a cleanup function from useEffect. This function runs before the component unmounts and before the effect re-runs with new dependencies. Common use cases include clearing timers with clearInterval, unsubscribing from event listeners or WebSocket connections, and cancelling API requests to prevent memory leaks and state updates on unmounted components.",
+    "expectedConcepts": ["useEffect", "cleanup", "unmount", "memory-leaks", "event-listeners"]
+  },
+  {
+    "topic": "react",
+    "subtopic": "state-management",
+    "difficulty": "hard",
+    "questionText": "Explain the useReducer hook and when you would choose it over useState.",
+    "expectedAnswer": "useReducer is an alternative to useState for managing complex state logic. It takes a reducer function and initial state, returning the current state and a dispatch function. You would choose it over useState when state has multiple sub-values, when the next state depends on the previous state, or when state transitions follow specific rules. It is similar to how Redux works but built into React.",
+    "expectedConcepts": ["useReducer", "reducer", "dispatch", "complex-state", "state-transitions"]
+  },
+  {
+    "topic": "react",
+    "subtopic": "patterns",
+    "difficulty": "hard",
+    "questionText": "What are Higher-Order Components and how do they compare to custom hooks?",
+    "expectedAnswer": "Higher-Order Components (HOCs) are functions that take a component and return a new component with added behavior — like wrapping with authentication or data fetching. Custom hooks extract reusable logic into functions that can use other hooks. Custom hooks are generally preferred now because they avoid wrapper hell, are easier to compose, and don't create extra DOM nodes. HOCs can still be useful for cross-cutting concerns that modify rendering behavior.",
+    "expectedConcepts": ["higher-order-components", "custom-hooks", "reusability", "composition", "wrapper-hell"]
+  },
+  {
+    "topic": "nodejs",
+    "subtopic": "event-loop",
+    "difficulty": "easy",
+    "questionText": "What is the event loop in Node.js?",
+    "expectedAnswer": "The event loop is what allows Node.js to perform non-blocking I/O operations despite JavaScript being single-threaded. It continuously checks the call stack and the callback queue. When the stack is empty, it takes the first callback from the queue and pushes it onto the stack for execution. This is how Node handles async operations like file I/O, network requests, and timers without blocking the main thread.",
+    "expectedConcepts": ["event-loop", "non-blocking", "single-threaded", "callback-queue", "call-stack"]
+  },
+  {
+    "topic": "nodejs",
+    "subtopic": "modules",
+    "difficulty": "easy",
+    "questionText": "What is the difference between require and import in Node.js?",
+    "expectedAnswer": "require is the CommonJS module system — it loads modules synchronously at runtime and can be called conditionally. import is the ES Module system — it is statically analyzed at compile time, supports tree-shaking, and uses the export/import syntax. Modern Node.js supports both, but ES modules need either .mjs extension or type module in package.json. ES modules are the standard going forward.",
+    "expectedConcepts": ["commonjs", "es-modules", "require", "import", "tree-shaking", "static-analysis"]
+  },
+  {
+    "topic": "nodejs",
+    "subtopic": "streams",
+    "difficulty": "medium",
+    "questionText": "What are streams in Node.js and why are they useful?",
+    "expectedAnswer": "Streams are objects that let you read or write data in chunks rather than loading everything into memory at once. There are four types: Readable, Writable, Duplex, and Transform. They are useful for handling large files, network communication, and data transformation because they process data piece by piece, reducing memory usage and improving performance. For example, streaming a 2GB file uses constant memory instead of loading 2GB into RAM.",
+    "expectedConcepts": ["streams", "readable", "writable", "duplex", "transform", "memory-efficiency", "chunks"]
+  },
+  {
+    "topic": "nodejs",
+    "subtopic": "middleware",
+    "difficulty": "medium",
+    "questionText": "How does middleware work in Express.js?",
+    "expectedAnswer": "Middleware functions are functions that have access to the request, response, and next function in the request-response cycle. They can execute code, modify req and res objects, end the request-response cycle, or call next to pass control to the next middleware. Express executes middleware in the order they are defined. Common uses include authentication, logging, error handling, body parsing, and CORS headers.",
+    "expectedConcepts": ["middleware", "request-response", "next", "express", "authentication", "error-handling"]
+  },
+  {
+    "topic": "nodejs",
+    "subtopic": "error-handling",
+    "difficulty": "medium",
+    "questionText": "How do you handle errors in async Express routes?",
+    "expectedAnswer": "You can wrap async route handlers in try-catch blocks and call next(error) to pass errors to the error handling middleware. A common pattern is using an asyncHandler wrapper function that catches promise rejections automatically. For the error middleware itself, Express recognizes middleware with four parameters (err, req, res, next) as error handlers. You should also handle unhandled promise rejections and uncaught exceptions at the process level.",
+    "expectedConcepts": ["try-catch", "async-await", "error-middleware", "asyncHandler", "unhandled-rejections"]
+  },
+  {
+    "topic": "nodejs",
+    "subtopic": "security",
+    "difficulty": "hard",
+    "questionText": "What are common security vulnerabilities in Node.js applications and how do you prevent them?",
+    "expectedAnswer": "Common vulnerabilities include SQL/NoSQL injection (prevent with parameterized queries and input validation), XSS (prevent with output encoding and Content Security Policy headers), CSRF (prevent with CSRF tokens), authentication flaws (use bcrypt for passwords, JWT with proper expiry), and dependency vulnerabilities (use npm audit). Also important are rate limiting, HTTPS, helmet.js for security headers, and never trusting user input.",
+    "expectedConcepts": ["injection", "xss", "csrf", "authentication", "input-validation", "rate-limiting", "helmet"]
+  },
+  {
+    "topic": "nodejs",
+    "subtopic": "event-loop",
+    "difficulty": "hard",
+    "questionText": "Explain the different phases of the Node.js event loop.",
+    "expectedAnswer": "The event loop has six phases: timers (executes setTimeout and setInterval callbacks), pending callbacks (I/O callbacks deferred to next iteration), idle/prepare (internal use), poll (retrieves new I/O events and executes I/O callbacks), check (executes setImmediate callbacks), and close callbacks (like socket.on close). The loop processes each phase in order. Microtasks like Promise callbacks and process.nextTick run between each phase.",
+    "expectedConcepts": ["timers", "poll", "check", "setImmediate", "microtasks", "process-nextTick", "phases"]
+  },
+  {
+    "topic": "nodejs",
+    "subtopic": "architecture",
+    "difficulty": "hard",
+    "questionText": "What is the cluster module and when would you use it?",
+    "expectedAnswer": "The cluster module allows you to create child processes that share the same server port. Since Node.js is single-threaded, a single process only uses one CPU core. The cluster module forks multiple worker processes to handle requests across all CPU cores, improving throughput. The master process manages workers and can restart them if they crash. PM2 is a popular process manager that simplifies cluster management in production.",
+    "expectedConcepts": ["cluster", "worker-processes", "multi-core", "fork", "pm2", "scalability"]
+  },
+  {
+    "topic": "dsa",
+    "subtopic": "arrays",
+    "difficulty": "easy",
+    "questionText": "What is the difference between an array and a linked list?",
+    "expectedAnswer": "Arrays store elements in contiguous memory locations with O(1) random access by index, but O(n) insertion and deletion in the middle because elements need to be shifted. Linked lists store elements as nodes with pointers to the next node, allowing O(1) insertion and deletion if you have a reference to the node, but O(n) access since you must traverse from the head. Arrays have better cache locality while linked lists have dynamic size.",
+    "expectedConcepts": ["array", "linked-list", "random-access", "insertion", "deletion", "cache-locality", "time-complexity"]
+  },
+  {
+    "topic": "dsa",
+    "subtopic": "complexity",
+    "difficulty": "easy",
+    "questionText": "Explain Big O notation and give examples of common time complexities.",
+    "expectedAnswer": "Big O notation describes the upper bound of an algorithm's time or space complexity as input grows. Common complexities: O(1) constant (hash table lookup), O(log n) logarithmic (binary search), O(n) linear (array traversal), O(n log n) linearithmic (merge sort), O(n²) quadratic (nested loops, bubble sort), O(2^n) exponential (recursive fibonacci). It focuses on the dominant term and ignores constants.",
+    "expectedConcepts": ["big-o", "time-complexity", "space-complexity", "constant", "logarithmic", "linear", "quadratic"]
+  },
+  {
+    "topic": "dsa",
+    "subtopic": "trees",
+    "difficulty": "medium",
+    "questionText": "What is a Binary Search Tree and what are its key operations?",
+    "expectedAnswer": "A BST is a binary tree where each node's left children are smaller and right children are larger than the node. Key operations are search, insert, and delete — all O(log n) on average for balanced trees but O(n) in worst case for skewed trees. In-order traversal of a BST gives sorted output. BSTs are used for efficient searching and sorted data maintenance. Self-balancing variants like AVL and Red-Black trees guarantee O(log n) operations.",
+    "expectedConcepts": ["bst", "binary-tree", "search", "insert", "delete", "in-order", "balanced", "avl"]
+  },
+  {
+    "topic": "dsa",
+    "subtopic": "hashing",
+    "difficulty": "medium",
+    "questionText": "How does a hash table work and how are collisions handled?",
+    "expectedAnswer": "A hash table maps keys to values using a hash function that converts keys into array indices. The hash function should distribute keys uniformly. Collisions occur when two keys hash to the same index. Common collision handling methods are chaining (each slot holds a linked list of entries) and open addressing (probing for the next empty slot — linear, quadratic, or double hashing). Average case for lookup, insert, delete is O(1).",
+    "expectedConcepts": ["hash-table", "hash-function", "collision", "chaining", "open-addressing", "probing"]
+  },
+  {
+    "topic": "dsa",
+    "subtopic": "sorting",
+    "difficulty": "medium",
+    "questionText": "Compare merge sort and quicksort. When would you prefer one over the other?",
+    "expectedAnswer": "Both are O(n log n) average case divide-and-conquer algorithms. Merge sort has guaranteed O(n log n) worst case but uses O(n) extra space. Quicksort has O(n²) worst case (rare with good pivot selection) but is in-place with O(log n) stack space. Quicksort is generally faster in practice due to better cache locality. Use merge sort when stability matters or worst-case guarantee is needed. Use quicksort for general-purpose sorting with memory constraints.",
+    "expectedConcepts": ["merge-sort", "quicksort", "divide-and-conquer", "stability", "in-place", "cache-locality", "pivot"]
+  },
+  {
+    "topic": "dsa",
+    "subtopic": "graphs",
+    "difficulty": "hard",
+    "questionText": "Explain BFS and DFS graph traversal algorithms and their use cases.",
+    "expectedAnswer": "BFS (Breadth-First Search) explores level by level using a queue — it finds the shortest path in unweighted graphs and is used for level-order traversal, finding connected components, and shortest path problems. DFS (Depth-First Search) explores as deep as possible using a stack or recursion — it is used for topological sorting, cycle detection, pathfinding, and solving mazes. BFS uses O(V) space for the queue, DFS uses O(V) for the recursion stack.",
+    "expectedConcepts": ["bfs", "dfs", "queue", "stack", "shortest-path", "topological-sort", "cycle-detection"]
+  },
+  {
+    "topic": "dsa",
+    "subtopic": "dynamic-programming",
+    "difficulty": "hard",
+    "questionText": "What is dynamic programming and how does it differ from recursion?",
+    "expectedAnswer": "Dynamic programming is an optimization technique for solving problems with overlapping subproblems and optimal substructure. Plain recursion can solve the same problems but recomputes subproblems multiple times, leading to exponential time. DP avoids this through memoization (top-down, storing results of recursive calls) or tabulation (bottom-up, filling a table iteratively). Classic examples include Fibonacci, knapsack, longest common subsequence, and coin change.",
+    "expectedConcepts": ["dynamic-programming", "overlapping-subproblems", "optimal-substructure", "memoization", "tabulation", "top-down", "bottom-up"]
+  },
+  {
+    "topic": "dsa",
+    "subtopic": "stacks-queues",
+    "difficulty": "easy",
+    "questionText": "What are stacks and queues? Give real-world examples of each.",
+    "expectedAnswer": "A stack is a LIFO (Last In First Out) data structure — push and pop from the top. Examples: browser back button (history stack), undo operations in editors, function call stack. A queue is a FIFO (First In First Out) data structure — enqueue at the back, dequeue from the front. Examples: printer job queue, request handling in web servers, BFS algorithm. Both have O(1) push/pop and enqueue/dequeue operations.",
+    "expectedConcepts": ["stack", "queue", "lifo", "fifo", "push", "pop", "enqueue", "dequeue"]
+  }
+]
