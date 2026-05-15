@@ -5,6 +5,7 @@ import * as resumeService from "../resumes/service.js";
 import * as matchingService from "../matching/service.js";
 import { generateRecommendations } from "../../../../ai-ml/pipeline/recommendationEngine.js";
 import AppError from "../../utils/AppError.js";
+import { getIO } from "../../utils/socketIO.js";
 
 /**
  * Create a new job posting
@@ -591,5 +592,18 @@ export const updateApplicationStatus = async (applicationId, recruiterId, { stat
   });
 
   await application.save();
+
+  // Emit real-time notification to the applicant
+  const io = getIO();
+  if (io) {
+    const roomName = `user_${application.applicant}`;
+    io.to(roomName).emit("application-status-updated", {
+      applicationId: application._id,
+      jobTitle: application.job.title,
+      status: application.status,
+      updatedAt: new Date(),
+    });
+  }
+
   return application;
 };

@@ -27,6 +27,7 @@ import ClassroomRoom from "../modules/classrooms/pages/ClassroomRoom";
 import InterviewLobby from "../modules/mock-interview/pages/InterviewLobby";
 import ProtectedRoute from "../shared/components/ProtectedRoute";
 import ThemeToggle from "../shared/components/ThemeToggle";
+import SocketNotificationListener from "../shared/components/SocketNotificationListener";
 function App() {
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
@@ -39,6 +40,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white text-black dark:bg-dark-bg dark:text-text-main transition-colors duration-300">
+      <SocketNotificationListener />
       
       <Routes>
         <Route path="/" element={<LandingPage />} />

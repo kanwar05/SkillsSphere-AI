@@ -17,6 +17,8 @@ import userRoutes from "./src/modules/users/routes.js";
 import { initClassroomSockets } from "./src/modules/classrooms/socket.js";
 import globalErrorHandler from "./src/middleware/errorMiddleware.js";
 import { logEvaluatorConfig } from "./src/config/evaluatorConfig.js";
+import { setIO } from "./src/utils/socketIO.js";
+import { initNotificationSockets } from "./src/modules/notifications/socket.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,6 +31,8 @@ const io = new Server(server, {
     methods: ["GET", "POST"]
   }
 });
+
+setIO(io);
 
 app.use(cors());
 
@@ -79,6 +83,7 @@ app.use("/api/users", userRoutes);
 
 // Initialize Sockets
 initClassroomSockets(io);
+initNotificationSockets(io);
 
 app.use(globalErrorHandler);
 
