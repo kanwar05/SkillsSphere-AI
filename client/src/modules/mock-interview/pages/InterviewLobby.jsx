@@ -121,36 +121,34 @@ const InterviewLobby = () => {
             selectedPersona={selectedPersona} 
             onSelect={setSelectedPersona} 
           />
-
-          <div className="start-section">
-            <Button
-              variant="primary"
-              size="lg"
-              className="start-button"
-              disabled={starting || loading}
-              onClick={handleStartInterview}
-            >
-              {starting ? (
-                <>
-                  <Loader2 className="spin-icon" /> Preparing Session...
-                </>
-              ) : (
-                <>
-                  <Play fill="currentColor" /> Start Interview Session
-                </>
-              )}
-            </Button>
-
-            <button
-              className="history-link"
-              onClick={() => navigate("/mock-interview/history")}
-            >
-              <History size={16} /> View Interview History
-            </button>
-          </div>
-
-
         </div>
+      </div>
+
+      <div className="start-section" style={{ marginTop: "2rem" }}>
+        <Button
+          variant="primary"
+          size="lg"
+          className="start-button"
+          disabled={starting || loading}
+          onClick={handleStartInterview}
+        >
+          {starting ? (
+            <>
+              <Loader2 className="spin-icon" /> Preparing Session...
+            </>
+          ) : (
+            <>
+              <Play fill="currentColor" /> Start Interview Session
+            </>
+          )}
+        </Button>
+
+        <button
+          className="history-link"
+          onClick={() => navigate("/mock-interview/history")}
+        >
+          <History size={16} /> View Interview History
+        </button>
       </div>
     </div>
   );
