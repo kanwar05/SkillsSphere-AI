@@ -52,6 +52,9 @@ Implemented:
   - `src/shared/components/ErrorState.jsx`
   - `src/shared/components/EmptyState.jsx`
   - `src/shared/components/PageHeader.jsx`
+- Interactive Roadmap Module:
+  - `src/modules/roadmap/pages/RoadmapPage.jsx` — Visual skill-tree and progress tracking
+  - `src/modules/roadmap/services/roadmapService.js` — Roadmap API integration
 
 Scaffolded placeholders:
 
@@ -81,6 +84,8 @@ Implemented:
   - `src/database/models/User.js` — User model for authentication and role management
   - `src/database/models/Resume.js` — Resume model for parsed resume data and skill matching
   - `src/database/models/JobPosting.js` — Mongoose model for recruiter-owned job postings with status, location, skills, and salary constraints
+  - `src/database/models/LearningProgress.js` — Roadmap and skill completion tracking for students
+  - `src/database/models/JobApplication.js` — (Updated: supports re-applying after withdrawal)
 - Auth registration & Login flow:
   - `src/modules/auth/routes.js`
   - `src/modules/auth/controller.js`
@@ -114,6 +119,9 @@ Implemented:
   - `src/modules/interviews/seed/questions.json` — 46 seed questions across 3 topics
   - `src/modules/interviews/seed/seedInterviewData.js` — Database seeding script
   - `src/integrations/aiInterviewService.js` — HTTP client for Python AI microservice
+- Roadmap & Learning Progress:
+  - `src/modules/roadmap/routes.js` — Progress API routes
+  - `src/modules/roadmap/controller.js` — Roadmap logic (sync, update, get)
 
 Scaffolded placeholders:
 
@@ -179,6 +187,9 @@ Scaffolded placeholders:
 - `POST /api/interviews/:id/complete`: end interview and calculate scores
 - `GET /api/interviews/:id/results`: get detailed results breakdown
 - `GET /api/interviews/history`: paginated interview history
+- `GET /api/roadmap/me`: fetch user's learning roadmap and progress
+- `POST /api/roadmap/sync`: sync roadmap with latest analysis suggestions
+- `PATCH /api/roadmap/update-topic`: update status of a specific roadmap milestone
 
 ## Notes
 

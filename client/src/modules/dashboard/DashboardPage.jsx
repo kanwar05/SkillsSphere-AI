@@ -40,7 +40,9 @@ import { logout } from "../../features/auth/authSlice";
 import Button from "../../shared/components/Button";
 import Navbar from "../../shared/landing/Navbar";
 import { getAnalysisHistory, getSkillTrends } from "./services/dashboardService";
+import { getMyRoadmap } from "../roadmap/services/roadmapService";
 import { getRecruiterJobs } from "../recruiter-jobs/services/jobPostingService";
+import { Rocket } from "lucide-react";
 import SuggestionItem from "./components/SuggestionItem";
 import StatCard from "./components/StatCard";
 import PerformanceTrend from "./components/PerformanceTrend";
@@ -59,6 +61,7 @@ const DashboardPage = () => {
   const [history, setHistory] = useState([]);
   const [recruiterJobs, setRecruiterJobs] = useState([]);
   const [skillTrends, setSkillTrends] = useState([]);
+  const [roadmap, setRoadmap] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedVersions, setSelectedVersions] = useState([]);
   const [showComparison, setShowComparison] = useState(false);
@@ -84,10 +87,12 @@ const DashboardPage = () => {
 
         // Fetch Skill Trends for both if needed, but mostly for students
         if (isStudent) {
-          const trendsResponse = await getSkillTrends();
-          if (trendsResponse.success) {
-            setSkillTrends(trendsResponse.trends || []);
-          }
+          const [trendsRes, roadmapRes] = await Promise.all([
+            getSkillTrends(),
+            getMyRoadmap()
+          ]);
+          if (trendsRes.success) setSkillTrends(trendsRes.trends || []);
+          if (roadmapRes.success) setRoadmap(roadmapRes.data || null);
         }
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
@@ -136,6 +141,7 @@ const DashboardPage = () => {
   }, [selectedVersions, history]);
 
   const latestAnalysis = history.length > 0 ? history[0] : null;
+  const nextMilestone = roadmap?.roadmap?.find(t => t.status !== "completed");
 
   // Recruiter Stats Calculation
   const jobStats = useMemo(() => {
@@ -245,6 +251,32 @@ const DashboardPage = () => {
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             
+            {/* Next Roadmap Milestone - New Integration */}
+            {isStudent && nextMilestone && (
+              <Link to="/roadmap" className="block group">
+                <div className="mb-6 p-6 bg-gradient-to-br from-blue-600/20 to-indigo-900/40 border border-blue-500/20 rounded-[2rem] hover:border-blue-500/40 transition-all shadow-xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 group-hover:opacity-20 transition-all">
+                    <Rocket size={80} className="text-blue-400" />
+                  </div>
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Target size={16} className="text-blue-400" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">Next Career Milestone</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+                      Master {nextMilestone.topicName}
+                    </h3>
+                    <p className="text-sm text-slate-400 max-w-md mb-4 font-medium italic">
+                      "Completing this milestone will significantly boost your profile strength for {roadmap.targetRole} roles."
+                    </p>
+                    <div className="flex items-center gap-2 text-xs font-bold text-white bg-white/5 w-fit px-4 py-2 rounded-xl group-hover:bg-blue-600 transition-all">
+                      Continue Learning <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            )}
+
             {/* Score Trend Chart - Student Only */}
             {isStudent && (
               <PerformanceTrend 

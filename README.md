@@ -42,6 +42,7 @@ SkillSphere AI aims to simplify the path from learning to hiring by giving users
    - Drag & Drop / clipboard paste upload
    - ATS score with detailed analysis dashboard
    - Missing keyword identification
+   - **Industry Benchmarking Mode** — Analyzes your resume against market standards even without a specific Job Description (BM badge).
    - Live PDF document preview
 
 3. **Resume vs Job Description Matcher**  
@@ -61,8 +62,15 @@ SkillSphere AI aims to simplify the path from learning to hiring by giving users
    - Python AI microservice for NLP evaluation (spaCy + sentence-transformers)
    - Fail-soft mode: falls back to mock scores when AI service is unavailable
 
-5. **Skill Tracking Dashboard**  
-   Performance insights to help students and tutors track growth.
+5. **Interactive Learning Roadmaps**  
+   Personalized skill-trees generated from AI analysis. (Route: `/roadmap`)
+   - Visual vertical progression path with interactive milestones
+   - Real-time "Job-Readiness" percentage tracking
+   - Direct integration with Dashboard for "Next Step" guidance
+   - Automatic sync with latest Resume Analysis feedback
+
+6. **Skill Tracking Dashboard**  
+   Performance insights and "Next Learning Milestone" guidance to help students track growth.
 
 6. **Secure Authentication & Email Verification**  
    OTP-based registration and password recovery system.
@@ -156,8 +164,8 @@ SkillSphere-AI/
 │   │   └── services/                # API service layer
 ├── server/                          # Express backend
 │   ├── src/
-│   │   ├── modules/                 # Backend business logic by domain
-│   │   ├── database/                # Mongoose models and connection
+│   │   ├── modules/                 # Backend business logic (Auth, Resumes, Jobs, Roadmap)
+│   │   ├── database/                # Mongoose models (User, Resume, JobApplication, LearningProgress)
 │   │   └── middleware/              # Auth, RBAC, and Upload handlers
 ├── ai-ml/                           # AI/ML intelligence layer
 │   ├── evaluators/                  # Skill, Keyword, and Experience matchers
@@ -185,6 +193,9 @@ SkillSphere-AI/
 - `POST /api/resume/analyze` (v2: uses latest-only upsert flow)
 - `GET /api/resume/me/latest`: fetch user's latest parsed resume (no raw resumeText)
 - `GET /api/resume/result/:id`
+- `GET /api/roadmap/me`: fetch user's learning roadmap and progress
+- `POST /api/roadmap/sync`: sync roadmap with latest analysis suggestions
+- `PATCH /api/roadmap/update-topic`: update status of a specific roadmap milestone
 
 - `GET /uploads/:filename`
 - `POST /api/jobs`: create a new job (Recruiter only)
