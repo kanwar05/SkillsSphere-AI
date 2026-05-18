@@ -7,13 +7,10 @@ import App from './App.jsx';
 import './index.css';
 import { ToastProvider } from '../shared/components';
 const savedTheme =
-  localStorage.getItem("skillssphere.theme") || "dark";
+  localStorage.getItem("skillssphere.theme") || "light";
 
-if (savedTheme === "dark") {
-  document.documentElement.classList.add("dark");
-} else {
-  document.documentElement.classList.remove("dark");
-}
+document.documentElement.classList.toggle("dark", savedTheme === "dark");
+document.documentElement.classList.toggle("light", savedTheme === "light");
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

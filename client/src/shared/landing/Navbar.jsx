@@ -8,9 +8,9 @@ import { getProtectedAssetUrl } from '../../utils/protectedAssetUrl';
 
 const getStoredTheme = () => {
   try {
-    return window?.localStorage?.getItem('skillssphere.theme') || 'dark';
+    return window?.localStorage?.getItem('skillssphere.theme') || 'light';
   } catch {
-    return 'dark';
+    return 'light';
   }
 };
 
