@@ -25,7 +25,7 @@ const renderAnimatedChars = (text, startDelay = 0, stepDelay = 80) =>
 
 const Hero = () => {
   return (
-    <section className="relative min-h-[92vh] flex items-center px-4 pt-32 pb-20 overflow-visible animate-slide-up sm:pt-28 sm:pb-14">
+    <section className="relative min-h-[92vh] max-sm:min-h-[72vh] flex items-center px-4 pt-28 pb-16 overflow-visible animate-slide-up sm:pt-28 sm:pb-14">
       {/* Light mode gradient orbs */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full opacity-0 dark:opacity-0"
@@ -197,7 +197,7 @@ const Hero = () => {
                 })}
               </div>
 
-              <div className="relative min-h-[390px] rounded-xl border border-[var(--border)] bg-[linear-gradient(145deg,var(--surface),rgba(16,185,129,0.04))] dark:bg-[linear-gradient(145deg,rgba(255,255,255,0.03),rgba(124,58,237,0.08))] p-5 overflow-hidden max-sm:min-h-[340px]">
+              <div className="relative min-h-[390px] max-sm:min-h-[260px] rounded-xl border border-[var(--border)] bg-[linear-gradient(145deg,var(--surface),rgba(16,185,129,0.04))] dark:bg-[linear-gradient(145deg,rgba(255,255,255,0.03),rgba(124,58,237,0.08))] p-5 overflow-hidden">
                 <div aria-hidden className="absolute inset-0 opacity-70"
                   style={{
                     background:
