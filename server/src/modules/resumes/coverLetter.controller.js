@@ -36,6 +36,8 @@ export const generateCoverLetterForResume = async (req, res, next) => {
     }
 
     // Build the dynamic prompt using the parsed resume data
+    console.log("Resume:", resume);
+    console.log("JD:", jobDescription);
     const prompt = buildCoverLetterPrompt({
       resumeData: resume,
       analysisData: {
@@ -45,13 +47,17 @@ export const generateCoverLetterForResume = async (req, res, next) => {
       jobDescription
     });
 
+    console.log("Generated Prompt:", prompt);
+
     // Generate the cover letter using the Gemini service
     const aiResult = await generateCoverLetter(prompt);
+
+    console.log("Gemini Response:", aiResult);
 
     if (!aiResult.success) {
       return res.status(500).json({ 
         success: false, 
-        message: "Failed to generate cover letter. Please try again." 
+        error: aiResult.error || "Unknown AI Generation Error" 
       });
     }
 
@@ -72,6 +78,9 @@ export const generateCoverLetterForResume = async (req, res, next) => {
     });
   } catch (error) {
     console.error("Cover Letter Generation Error:", error);
-    next(error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
 };

@@ -35,8 +35,8 @@ export const generateCoverLetter = async (prompt) => {
 
   try {
     const aiClient = initializeGemini();
-    // Using gemini-1.5-flash as it is the standard model for general text tasks
-    const model = aiClient.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Using gemini-2.5-flash as it is the standard supported model for this API key
+    const model = aiClient.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const result = await model.generateContent(prompt);
     const response = await result.response;

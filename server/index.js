@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-dotenv.config();
+dotenv.config({ override: true });
 
 import http from "http";
 import { Server } from "socket.io";
