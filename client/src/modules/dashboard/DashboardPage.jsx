@@ -24,6 +24,7 @@ import {
   PlusCircle,
   Briefcase,
   LayoutDashboard,
+  Users,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -40,7 +41,7 @@ import {
 import { logout } from "../../features/auth/authSlice";
 import Button from "../../shared/components/Button";
 import Navbar from "../../shared/landing/Navbar";
-import { getAnalysisHistory, getSkillTrends } from "./services/dashboardService";
+import { getAnalysisHistory, getSkillTrends, getRoleAnalytics } from "./services/dashboardService";
 import { getMyRoadmap } from "../roadmap/services/roadmapService";
 import { getRecruiterJobs } from "../recruiter-jobs/services/jobPostingService";
 import { Rocket } from "lucide-react";
@@ -63,6 +64,7 @@ const DashboardPage = () => {
   const [recruiterJobs, setRecruiterJobs] = useState([]);
   const [skillTrends, setSkillTrends] = useState([]);
   const [roadmap, setRoadmap] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedVersions, setSelectedVersions] = useState([]);
   const [showComparison, setShowComparison] = useState(false);
@@ -96,6 +98,9 @@ const DashboardPage = () => {
           if (trendsRes.success) setSkillTrends(trendsRes.trends || []);
           if (roadmapRes.success) setRoadmap(roadmapRes.data || null);
         }
+
+        const analyticsRes = await getRoleAnalytics();
+        if (analyticsRes.success) setAnalytics(analyticsRes.data);
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
       } finally {
@@ -221,6 +226,40 @@ const DashboardPage = () => {
               className="sm:col-span-2 md:col-span-1"
             />
           </section>
+
+          {/* Dynamic Role-Specific Analytics */}
+          {analytics && (
+            <section className="grid gap-4 sm:gap-6 md:grid-cols-3 grid-cols-1">
+              {isStudent && (
+                <>
+                  <StatCard icon={Target} label="Roadmap Progress" value={`${analytics.roadmapProgress}%`} color="blue" />
+                  <StatCard icon={CheckCircle} label="Topics Completed" value={analytics.completedTopics} color="emerald" />
+                  <StatCard icon={Activity} label="Avg Interview Score" value={`${analytics.averageInterviewScore}%`} color="violet" />
+                </>
+              )}
+              {isTutor && (
+                <>
+                  <StatCard icon={Users} label="Active Students" value={analytics.activeStudents} color="blue" />
+                  <StatCard icon={BarChart3} label="Platform Avg Score" value={`${analytics.averagePlatformScore}%`} color="emerald" />
+                  <StatCard icon={CheckCircle} label="Total Interviews" value={analytics.totalMockInterviewsCompleted} color="violet" />
+                </>
+              )}
+              {isRecruiter && (
+                <>
+                  <StatCard icon={Target} label="Elite Candidates (>80%)" value={analytics.totalEliteCandidates} color="emerald" />
+                  <div className="col-span-1 sm:col-span-2 bg-gray-100 dark:bg-slate-900/50 p-5 rounded-2xl border border-gray-200 dark:border-white/10 shadow-2xl backdrop-blur-md">
+                    <h3 className="text-xs font-bold text-gray-500 dark:text-slate-500 mb-3 uppercase tracking-widest">Talent Pool Density Map</h3>
+                    <div className="flex flex-wrap gap-2">
+                       {analytics.talentDensity?.map(t => (
+                         <span key={t.topic} className="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-500/30 uppercase tracking-widest">{t.topic}: {t.skilledCandidates}</span>
+                       ))}
+                       {(!analytics.talentDensity || analytics.talentDensity.length === 0) && <span className="text-xs text-slate-500">No density data yet</span>}
+                    </div>
+                  </div>
+                </>
+              )}
+            </section>
+          )}
 
           {/* Recruiter Specific Stats Grid */}
           {isRecruiter && (
