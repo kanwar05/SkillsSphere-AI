@@ -10,7 +10,8 @@ import {
   ExternalLink, 
   MessageSquare,
   ChevronRight,
-  Filter
+  Filter,
+  Sparkles
 } from 'lucide-react';
 import Navbar from '../../../shared/landing/Navbar';
 import { Button, LoadingState, ErrorState, EmptyState, StatusUpdateModal, StatusTimeline } from '../../../shared/components';
@@ -22,6 +23,31 @@ const statusStyles = {
   shortlisted: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   rejected: "bg-red-500/10 text-red-400 border-red-500/20",
   withdrawn: "bg-slate-700/30 text-slate-400 border-slate-700/50",
+};
+
+const matchCategoryStyles = {
+  "Excellent Match": "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  "Moderate Match": "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  "Growth Potential": "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+  "Weak Alignment": "bg-red-500/10 text-red-400 border-red-500/20",
+};
+
+const filterStatuses = [
+  { value: "", label: "All" },
+  { value: "pending", label: "Pending" },
+  { value: "reviewed", label: "Reviewed" },
+  { value: "shortlisted", label: "Shortlisted" },
+  { value: "rejected", label: "Rejected" },
+  { value: "withdrawn", label: "Withdrawn" }
+];
+
+const dotStyles = {
+  all: "bg-blue-400",
+  pending: "bg-yellow-400",
+  reviewed: "bg-blue-400",
+  shortlisted: "bg-emerald-400",
+  rejected: "bg-red-400",
+  withdrawn: "bg-slate-400",
 };
 
 const RecruiterApplicantsPage = () => {
@@ -36,6 +62,7 @@ const RecruiterApplicantsPage = () => {
   const [selectedApp, setSelectedApp] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -43,7 +70,7 @@ const RecruiterApplicantsPage = () => {
     try {
       const [jobData, appsData] = await Promise.all([
         getJobPostingById(jobId, token),
-        getJobApplications(jobId, token)
+        getJobApplications(jobId, token, statusFilter)
       ]);
       setJob(jobData.job);
       setApplicants(appsData.applications || []);
@@ -52,7 +79,7 @@ const RecruiterApplicantsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [jobId, token]);
+  }, [jobId, token, statusFilter]);
 
   useEffect(() => {
     fetchData();
@@ -96,19 +123,35 @@ const RecruiterApplicantsPage = () => {
             </h1>
             <div className="flex items-center gap-4 text-slate-400 text-sm">
               <span className="flex items-center gap-1.5">
-                <Users size={16} /> {applicants.length} Total Applicants
+                <Users size={16} /> {applicants.length} {statusFilter ? `${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} ` : ""}Applicant{applicants.length !== 1 ? 's' : ''}
               </span>
               <span className="flex items-center gap-1.5 uppercase tracking-wider text-[10px] font-bold bg-white/5 px-2 py-0.5 rounded border border-white/5">
                 Job ID: {jobId.slice(-6)}
               </span>
             </div>
           </div>
+        </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" leftIcon={<Filter size={18} />} className="border-white/5 bg-white/5 hover:bg-white/10">
-              Filter
-            </Button>
-          </div>
+        {/* Filter Pills */}
+        <div className="flex items-center gap-2 p-1.5 bg-slate-900/40 border border-white/5 rounded-2xl overflow-x-auto whitespace-nowrap md:flex-wrap">
+          {filterStatuses.map((status) => {
+            const isActive = statusFilter === status.value;
+            const dotColor = dotStyles[status.value || "all"];
+            return (
+              <button
+                key={status.value || "all"}
+                onClick={() => setStatusFilter(status.value)}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 shrink-0 ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)] border border-blue-500/30"
+                    : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${dotColor} ${isActive ? 'animate-pulse' : ''}`} />
+                {status.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Content */}
@@ -121,8 +164,8 @@ const RecruiterApplicantsPage = () => {
         ) : applicants.length === 0 ? (
           <EmptyState 
             icon={<Users size={48} className="text-slate-700" />}
-            title="No applicants yet"
-            description="As soon as students apply to this position, they will appear here with their resumes and match scores."
+            title={statusFilter ? `No ${statusFilter} applicants` : "No applicants yet"}
+            description={statusFilter ? `There are no candidates currently in the "${statusFilter}" status for this job.` : "As soon as students apply to this position, they will appear here with their resumes and match scores."}
           />
         ) : (
           <div className="grid grid-cols-1 gap-4">
@@ -160,6 +203,17 @@ const RecruiterApplicantsPage = () => {
                     </div>
 
                     <div className="flex items-center gap-4 shrink-0">
+                      {app.aiMatchScore !== undefined && app.aiMatchScore !== null && (
+                        <div className="flex flex-col items-end mr-2">
+                          <span className="text-xl font-bold text-white flex items-center gap-1">
+                            <Sparkles size={16} className="text-emerald-400" />
+                            {app.aiMatchScore}%
+                          </span>
+                          <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border mt-1 ${matchCategoryStyles[app.matchCategory] || "text-slate-400 border-white/10"}`}>
+                            {app.matchCategory || "Evaluated"}
+                          </span>
+                        </div>
+                      )}
                       <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${statusStyles[app.status]}`}>
                         {app.status}
                       </span>
@@ -211,6 +265,80 @@ const RecruiterApplicantsPage = () => {
                             </div>
                           </div>
                         </div>
+
+                        {app.aiRecruiterInsights && app.aiRecruiterInsights.length > 0 && (
+                          <div className="space-y-3 pt-6 border-t border-white/5">
+                            <h4 className="text-sm font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                              <Sparkles size={16} /> AI Recruiter Insights
+                            </h4>
+                            <div className="p-5 bg-slate-900/50 border border-blue-500/20 rounded-2xl shadow-inner">
+                              <ul className="space-y-2">
+                                {app.aiRecruiterInsights.map((insight, idx) => (
+                                  <li key={idx} className="flex items-start gap-2 text-sm text-slate-300">
+                                    <span className="text-blue-400 mt-0.5">•</span>
+                                    <span className="leading-relaxed">{insight}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
+
+                        {app.matchBreakdown && (
+                          <div className="space-y-3 pt-6 border-t border-white/5">
+                            <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+                              <Sparkles size={16} /> AI Match Breakdown
+                            </h4>
+                            <div className="p-4 bg-slate-900/80 border border-white/5 rounded-2xl space-y-4">
+                              <div>
+                                <div className="flex justify-between items-center mb-1.5">
+                                  <span className="text-sm text-slate-400">ATS Compatibility</span>
+                                  <span className="text-sm font-bold text-slate-200">{app.matchBreakdown.atsCompatibility || 0}%</span>
+                                </div>
+                                <div className="w-full bg-slate-800 rounded-full h-1.5">
+                                  <div className="bg-emerald-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: `${app.matchBreakdown.atsCompatibility || 0}%` }}></div>
+                                </div>
+                              </div>
+
+                              <div>
+                                <div className="flex justify-between items-center mb-1.5">
+                                  <span className="text-sm text-slate-400">Skill Match</span>
+                                  <span className="text-sm font-bold text-slate-200">{app.matchBreakdown.skillMatch || 0}%</span>
+                                </div>
+                                <div className="w-full bg-slate-800 rounded-full h-1.5">
+                                  <div className="bg-blue-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: `${app.matchBreakdown.skillMatch || 0}%` }}></div>
+                                </div>
+                              </div>
+
+                              <div>
+                                <div className="flex justify-between items-center mb-1.5">
+                                  <span className="text-sm text-slate-400">Project Strength</span>
+                                  <span className="text-sm font-bold text-slate-200">{app.matchBreakdown.projectStrength || 0}%</span>
+                                </div>
+                                <div className="w-full bg-slate-800 rounded-full h-1.5">
+                                  <div className="bg-purple-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: `${app.matchBreakdown.projectStrength || 0}%` }}></div>
+                                </div>
+                              </div>
+
+                              <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                                <span className="text-sm text-slate-400">Contribution Activity</span>
+                                <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                                  app.matchBreakdown.contributionActivity === 'High' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
+                                  app.matchBreakdown.contributionActivity === 'Medium' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 
+                                  'bg-slate-800 text-slate-400 border-white/10'
+                                }`}>{app.matchBreakdown.contributionActivity || 'Low'}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-slate-400">Career Readiness</span>
+                                <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                                  app.matchBreakdown.careerReadiness === 'High' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
+                                  app.matchBreakdown.careerReadiness === 'Medium' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 
+                                  'bg-slate-800 text-slate-400 border-white/10'
+                                }`}>{app.matchBreakdown.careerReadiness || 'Low'}</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
                         <div className="pt-4 flex gap-3">
                           <Button 

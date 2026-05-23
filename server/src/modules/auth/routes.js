@@ -7,6 +7,7 @@ import {
   isGoogleOAuthConfigured,
 } from "../../config/googleOAuth.js";
 import {
+  exchangeOAuthCode,
   forgotPassword,
   getMe,
   googleLogin,
@@ -139,5 +140,8 @@ router.post("/logout", logout);
 
 // 🔐 Google Login
 router.post("/google", googleLogin);
+
+// Exchange one-time auth code for JWT
+router.post("/exchange-code", authRateLimiter, exchangeOAuthCode);
 
 export default router;

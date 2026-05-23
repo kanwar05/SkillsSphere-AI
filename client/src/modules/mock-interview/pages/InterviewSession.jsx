@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { io } from "socket.io-client";
 import { submitAnswer, completeInterview } from "../services/interviewService";
 import { apiRequest } from "../../../services/apiClient";
 import InterviewSessionSkeleton from "../components/InterviewSessionSkeleton";
+import ObserverPanel from "../components/ObserverPanel";
 import {
   Send,
   CheckCircle,
@@ -23,6 +26,7 @@ const InterviewSession = () => {
   const { id: sessionId } = useParams();
   const navigate = useNavigate();
   const textareaRef = useRef(null);
+  const { user } = useSelector((state) => state.auth);
 
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -36,6 +40,14 @@ const InterviewSession = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isLastQuestion, setIsLastQuestion] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(null);
+
+  // Socket & Multi-role state
+  const [socket, setSocket] = useState(null);
+  const [participants, setParticipants] = useState([]);
+  const [liveTyping, setLiveTyping] = useState("");
+  const [socketStatus, setSocketStatus] = useState("connecting");
+
+  const isObserver = user && session && user._id !== session.userId;
 
   // Timer
   useEffect(() => {
@@ -78,6 +90,49 @@ const InterviewSession = () => {
     };
     fetchSession();
   }, [sessionId]);
+
+  // Socket Connection
+  useEffect(() => {
+    if (!session || !user) return;
+    const token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+    
+    // In production, VITE_API_URL should be used. Using standard URL for now.
+    const socketUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    const newSocket = io(socketUrl, { auth: { token } });
+
+    newSocket.on("connect", () => {
+      setSocketStatus("connected");
+      newSocket.emit("join-interview", { sessionId });
+    });
+
+    newSocket.on("disconnect", () => {
+      setSocketStatus("disconnected");
+    });
+
+    newSocket.on("reconnect_attempt", () => {
+      setSocketStatus("reconnecting");
+    });
+
+    newSocket.on("interview-participants", (pts) => {
+      setParticipants(pts.filter(p => p.user.id !== user._id));
+    });
+
+    newSocket.on("participant-joined", (data) => {
+      setParticipants(prev => [...prev.filter(p => p.socketId !== data.socketId), data]);
+    });
+
+    newSocket.on("participant-left", (data) => {
+      setParticipants(prev => prev.filter(p => p.socketId !== data.socketId));
+    });
+
+    newSocket.on("interview-typing", ({ text }) => {
+      setLiveTyping(text);
+    });
+
+    setSocket(newSocket);
+
+    return () => newSocket.close();
+  }, [session, user, sessionId]);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
@@ -139,6 +194,19 @@ const InterviewSession = () => {
     }
   };
 
+  const handleAnswerChange = (e) => {
+    setAnswer(e.target.value);
+    if (socket && !isObserver) {
+      socket.emit("interview-typing", { sessionId, text: e.target.value });
+    }
+  };
+
+  const handleSendFeedback = (note) => {
+    if (socket) {
+      socket.emit("save-private-note", { sessionId, note });
+    }
+  };
+
   if (loading) {
     return <InterviewSessionSkeleton />;
   }
@@ -163,9 +231,10 @@ const InterviewSession = () => {
   const totalQuestions = session?.totalQuestions || 0;
 
   return (
-    <div className="session-container">
-      {/* Header Bar */}
-      <div className="session-header">
+    <div className="flex h-screen bg-[#020617] text-white overflow-hidden p-6">
+      <div className="flex-1 max-w-4xl mx-auto flex flex-col h-full bg-slate-900/50 border border-slate-800 rounded-3xl p-8 relative overflow-hidden shadow-2xl">
+        {/* Header Bar */}
+        <div className="session-header">
         <div className="session-meta">
           <span className="session-topic">{session?.topic?.toUpperCase()}</span>
           <span className="session-difficulty">{session?.difficulty}</span>
@@ -188,6 +257,15 @@ const InterviewSession = () => {
         <div className="session-timer">
           <Clock size={16} />
           {formatTime(elapsedTime)}
+        </div>
+        <div className="socket-status">
+          <span className={`status-dot status-${socketStatus}`} />
+          <span className="status-text">
+            {socketStatus === "connected" && "Connected"}
+            {socketStatus === "disconnected" && "Disconnected"}
+            {socketStatus === "reconnecting" && "Reconnecting"}
+            {socketStatus === "connecting" && "Connecting..."}
+          </span>
         </div>
       </div>
 
@@ -220,22 +298,34 @@ const InterviewSession = () => {
         </div>
       )}
 
-      {/* Answer Input */}
+      {/* Answer Input / Observer View */}
       {!showScores && (
         <div className="answer-area">
-          <textarea
-            ref={textareaRef}
-            className="answer-textarea"
-            placeholder="Type your answer here... (Ctrl+Enter to submit)"
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={submitting}
-            rows={6}
-          />
+          {isObserver ? (
+            <div className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl p-6 h-48 overflow-y-auto">
+              <span className="text-[10px] uppercase font-black tracking-widest text-emerald-500 mb-2 block flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Candidate Typing Live...
+              </span>
+              <p className="text-sm text-slate-300 font-mono whitespace-pre-wrap">
+                {liveTyping || <span className="text-slate-600 italic">Waiting for candidate to start typing...</span>}
+              </p>
+            </div>
+          ) : (
+            <textarea
+              ref={textareaRef}
+              className="answer-textarea"
+              placeholder="Type your answer here... (Ctrl+Enter to submit)"
+              value={answer}
+              onChange={handleAnswerChange}
+              onKeyDown={handleKeyDown}
+              disabled={submitting}
+              rows={6}
+            />
+          )}
+          
           <div className="answer-footer">
             <span className="word-count">
-              {answer.trim().split(/\s+/).filter(Boolean).length} words
+              {isObserver ? liveTyping.trim().split(/\s+/).filter(Boolean).length : answer.trim().split(/\s+/).filter(Boolean).length} words
             </span>
 
             {error && (
@@ -247,7 +337,8 @@ const InterviewSession = () => {
             <button
               className="btn-submit"
               onClick={handleSubmitAnswer}
-              disabled={!answer.trim() || submitting}
+              disabled={!answer.trim() || submitting || isObserver}
+              style={{ display: isObserver ? 'none' : 'flex' }}
             >
               {submitting ? (
                 <>
@@ -293,6 +384,16 @@ const InterviewSession = () => {
           <Loader2 className="spin-icon" size={16} />
           Loading next question...
         </div>
+      )}
+      </div>
+
+      {/* Observer Panel (Only visible if observer) */}
+      {isObserver && (
+        <ObserverPanel 
+          participants={participants} 
+          onSendFeedback={handleSendFeedback} 
+          isConductor={true} 
+        />
       )}
     </div>
   );

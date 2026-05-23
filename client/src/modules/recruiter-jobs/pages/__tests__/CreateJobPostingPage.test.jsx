@@ -13,11 +13,11 @@ vi.mock('../../services/jobPostingService', () => ({
 }))
 
 // Mock the components
-vi.mock('../../../shared/landing/Navbar', () => ({
+vi.mock('../../../../shared/landing/Navbar', () => ({
   default: () => <nav data-testid="navbar">Navbar</nav>,
 }))
 
-vi.mock('../../../shared/components/Input', () => ({
+vi.mock('../../../../shared/components/Input', () => ({
   default: ({ id, label, value, onChange, error, type = 'text', ...props }) => (
     <div>
       <label htmlFor={id}>{label}</label>
@@ -34,7 +34,7 @@ vi.mock('../../../shared/components/Input', () => ({
   ),
 }))
 
-vi.mock('../../../shared/components/Select', () => ({
+vi.mock('../../../../shared/components/Select', () => ({
   default: ({ id, label, value, onChange, options, ...props }) => (
     <div>
       <label htmlFor={id}>{label}</label>
@@ -55,7 +55,7 @@ vi.mock('../../../shared/components/Select', () => ({
   ),
 }))
 
-vi.mock('../../../shared/components/Button', () => ({
+vi.mock('../../../../shared/components/Button', () => ({
   default: ({ children, loading, ...props }) => (
     <button disabled={loading} data-testid="submit-btn" {...props}>
       {loading ? 'Loading...' : children}
@@ -91,12 +91,12 @@ describe('CreateJobPostingPage', () => {
     expect(screen.getByTestId('select-status')).toBeInTheDocument()
     expect(screen.getByTestId('input-description')).toBeInTheDocument()
     expect(screen.getByTestId('input-skills')).toBeInTheDocument()
-    expect(screen.getByTestId('input-city')).toBeInTheDocument()
-    expect(screen.getByTestId('input-state')).toBeInTheDocument()
-    expect(screen.getByTestId('input-country')).toBeInTheDocument()
-    expect(screen.getByTestId('input-salaryMin')).toBeInTheDocument()
-    expect(screen.getByTestId('input-salaryMax')).toBeInTheDocument()
-    expect(screen.getByTestId('select-currency')).toBeInTheDocument()
+    expect(screen.getByTestId('input-location.city')).toBeInTheDocument()
+    expect(screen.getByTestId('input-location.state')).toBeInTheDocument()
+    expect(screen.getByTestId('input-location.country')).toBeInTheDocument()
+    expect(screen.getByTestId('input-salary.min')).toBeInTheDocument()
+    expect(screen.getByTestId('input-salary.max')).toBeInTheDocument()
+    expect(screen.getByTestId('select-salary.currency')).toBeInTheDocument()
     expect(screen.getByTestId('submit-btn')).toBeInTheDocument()
   })
 
@@ -104,8 +104,8 @@ describe('CreateJobPostingPage', () => {
     renderWithProviders(<CreateJobPostingPage />)
 
     expect(screen.getByTestId('select-status')).toHaveValue('draft')
-    expect(screen.getByTestId('input-country')).toHaveValue('India')
-    expect(screen.getByTestId('select-currency')).toHaveValue('INR')
+    expect(screen.getByTestId('input-location.country')).toHaveValue('India')
+    expect(screen.getByTestId('select-salary.currency')).toHaveValue('INR')
   })
 
   it('validates required fields before submission', async () => {
@@ -118,12 +118,12 @@ describe('CreateJobPostingPage', () => {
     // Should show validation errors
     await waitFor(() => {
       expect(screen.getByTestId('error-title')).toHaveTextContent('Job title is required')
-      expect(screen.getByTestId('error-description')).toHaveTextContent('Job description is required')
+      expect(screen.getByTestId('error-description')).toHaveTextContent('Description must be at least 20 characters')
       expect(screen.getByTestId('error-skills')).toHaveTextContent('At least one skill is required')
-      expect(screen.getByTestId('error-city')).toHaveTextContent('City is required')
-      expect(screen.getByTestId('error-state')).toHaveTextContent('State is required')
-      expect(screen.getByTestId('error-salaryMin')).toHaveTextContent('Minimum salary is required')
-      expect(screen.getByTestId('error-salaryMax')).toHaveTextContent('Maximum salary is required')
+      expect(screen.getByTestId('error-location.city')).toHaveTextContent('City is required')
+      expect(screen.getByTestId('error-location.state')).toHaveTextContent('State is required')
+      expect(screen.getByTestId('error-salary.min')).toHaveTextContent('Minimum salary is required')
+      expect(screen.getByTestId('error-salary.max')).toHaveTextContent('Maximum salary is required')
     })
 
     // Should not call API
@@ -138,15 +138,15 @@ describe('CreateJobPostingPage', () => {
     await user.type(screen.getByTestId('input-title'), 'Test Job')
     await user.type(screen.getByTestId('input-description'), 'Test description that is long enough')
     await user.type(screen.getByTestId('input-skills'), 'react, node')
-    await user.type(screen.getByTestId('input-city'), 'Mumbai')
-    await user.type(screen.getByTestId('input-state'), 'MH')
-    await user.type(screen.getByTestId('input-salaryMin'), '100000')
-    await user.type(screen.getByTestId('input-salaryMax'), '50000') // Less than min
+    await user.type(screen.getByTestId('input-location.city'), 'Mumbai')
+    await user.type(screen.getByTestId('input-location.state'), 'MH')
+    await user.type(screen.getByTestId('input-salary.min'), '100000')
+    await user.type(screen.getByTestId('input-salary.max'), '50000') // Less than min
 
     await user.click(screen.getByTestId('submit-btn'))
 
     await waitFor(() => {
-      expect(screen.getByTestId('error-salaryMax')).toHaveTextContent('greater than minimum')
+      expect(screen.getByTestId('error-salary.max')).toHaveTextContent('greater than or equal to minimum')
     })
 
     expect(jobPostingService.createJobPosting).not.toHaveBeenCalled()
@@ -162,10 +162,10 @@ describe('CreateJobPostingPage', () => {
     await user.type(screen.getByTestId('input-title'), 'Senior Engineer')
     await user.type(screen.getByTestId('input-description'), 'This is a detailed job description that meets minimum requirements')
     await user.type(screen.getByTestId('input-skills'), 'React, Node.js, TypeScript')
-    await user.type(screen.getByTestId('input-city'), 'Mumbai')
-    await user.type(screen.getByTestId('input-state'), 'Maharashtra')
-    await user.type(screen.getByTestId('input-salaryMin'), '800000')
-    await user.type(screen.getByTestId('input-salaryMax'), '1500000')
+    await user.type(screen.getByTestId('input-location.city'), 'Mumbai')
+    await user.type(screen.getByTestId('input-location.state'), 'Maharashtra')
+    await user.type(screen.getByTestId('input-salary.min'), '800000')
+    await user.type(screen.getByTestId('input-salary.max'), '1500000')
 
     // Change status
     await user.selectOptions(screen.getByTestId('select-status'), 'open')
@@ -209,10 +209,10 @@ describe('CreateJobPostingPage', () => {
     await user.type(screen.getByTestId('input-title'), 'Test Job')
     await user.type(screen.getByTestId('input-description'), 'Test description that is long enough for validation')
     await user.type(screen.getByTestId('input-skills'), 'react')
-    await user.type(screen.getByTestId('input-city'), 'Mumbai')
-    await user.type(screen.getByTestId('input-state'), 'MH')
-    await user.type(screen.getByTestId('input-salaryMin'), '100000')
-    await user.type(screen.getByTestId('input-salaryMax'), '200000')
+    await user.type(screen.getByTestId('input-location.city'), 'Mumbai')
+    await user.type(screen.getByTestId('input-location.state'), 'MH')
+    await user.type(screen.getByTestId('input-salary.min'), '100000')
+    await user.type(screen.getByTestId('input-salary.max'), '200000')
 
     await user.click(screen.getByTestId('submit-btn'))
 
@@ -241,17 +241,17 @@ describe('CreateJobPostingPage', () => {
     await user.type(screen.getByTestId('input-title'), 'Test Job')
     await user.type(screen.getByTestId('input-description'), 'Test description that is long enough for validation purposes')
     await user.type(screen.getByTestId('input-skills'), 'react, node')
-    await user.type(screen.getByTestId('input-city'), 'Mumbai')
-    await user.type(screen.getByTestId('input-state'), 'MH')
-    await user.type(screen.getByTestId('input-salaryMin'), '100000')
-    await user.type(screen.getByTestId('input-salaryMax'), '200000')
+    await user.type(screen.getByTestId('input-location.city'), 'Mumbai')
+    await user.type(screen.getByTestId('input-location.state'), 'MH')
+    await user.type(screen.getByTestId('input-salary.min'), '100000')
+    await user.type(screen.getByTestId('input-salary.max'), '200000')
 
     await user.click(screen.getByTestId('submit-btn'))
 
     await waitFor(() => {
       // Mapped errors should appear
-      expect(screen.getByTestId('error-city')).toHaveTextContent('City is required')
-      expect(screen.getByTestId('error-salaryMin')).toHaveTextContent('Minimum salary must be positive')
+      expect(screen.getByTestId('error-location.city')).toHaveTextContent('City is required')
+      expect(screen.getByTestId('error-salary.min')).toHaveTextContent('Minimum salary must be positive')
       expect(screen.getByTestId('error-title')).toHaveTextContent('Title is too short')
     })
   })
@@ -268,10 +268,10 @@ describe('CreateJobPostingPage', () => {
     await user.type(screen.getByTestId('input-title'), 'Test Job')
     await user.type(screen.getByTestId('input-description'), 'Test description that is long enough for validation')
     await user.type(screen.getByTestId('input-skills'), 'react')
-    await user.type(screen.getByTestId('input-city'), 'Mumbai')
-    await user.type(screen.getByTestId('input-state'), 'MH')
-    await user.type(screen.getByTestId('input-salaryMin'), '100000')
-    await user.type(screen.getByTestId('input-salaryMax'), '200000')
+    await user.type(screen.getByTestId('input-location.city'), 'Mumbai')
+    await user.type(screen.getByTestId('input-location.state'), 'MH')
+    await user.type(screen.getByTestId('input-salary.min'), '100000')
+    await user.type(screen.getByTestId('input-salary.max'), '200000')
 
     await user.click(screen.getByTestId('submit-btn'))
 

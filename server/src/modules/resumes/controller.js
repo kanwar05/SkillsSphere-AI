@@ -4,12 +4,6 @@ import { parseResume } from "../../utils/parseResume.js";
 import Resume from "../../database/models/Resume.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 import AppError from "../../utils/AppError.js";
-import {
-  experienceMatchEvaluator,
-  keywordMatchEvaluator,
-  skillMatchEvaluator,
-  semanticMatchEvaluator,
-} from "./evaluatorAdapters.js";
 import { runPipeline } from "../../../../ai-ml/pipeline/runPipeline.js";
 import {
   normalizeResumeData,
@@ -121,17 +115,7 @@ export const analyzeResume = asyncHandler(async (req, res, next) => {
     jobDescription: req.body.jobDescription,
   });
   console.timeEnd("PipelineExecution");
-
-  const evaluators = [];
-  if (parsedData.skills?.length && jobSkills.length) {
-    evaluators.push(skillMatchEvaluator);
-  }
-  if (req.body.jobDescription && parsedData.resumeText) {
-    evaluators.push(keywordMatchEvaluator);
-    evaluators.push(semanticMatchEvaluator);
-  }
-  evaluators.push(experienceMatchEvaluator);
-
+  
   // 🔗 LINK VERIFICATION: Check if extracted links are alive
   console.time("LinkVerification");
   const linksToVerify = [

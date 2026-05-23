@@ -2,6 +2,7 @@ import InterviewSession from "../../database/models/InterviewSession.js";
 import QuestionBank from "../../database/models/QuestionBank.js";
 import ConceptGraph from "../../database/models/ConceptGraph.js";
 import AppError from "../../utils/AppError.js";
+import mongoose from "mongoose";
 import {
   transcribeAudio,
   evaluateAnswer,
@@ -266,13 +267,29 @@ export const finalizeInterview = async (sessionId, userId) => {
   // Calculate duration
   const duration = Math.round((Date.now() - session.startedAt.getTime()) / 1000);
 
-  // Update session
-  session.status = "completed";
-  session.overallScore = overallScore;
-  session.weakConcepts = weakConcepts;
-  session.duration = duration;
-  session.completedAt = new Date();
-  await session.save();
+  const dbSession = await mongoose.startSession();
+  dbSession.startTransaction();
+
+  try {
+    session.status = "completed";
+    session.overallScore = overallScore;
+    session.weakConcepts = weakConcepts;
+    session.duration = duration;
+    session.completedAt = new Date();
+    
+    // Save within the transaction
+    await session.save({ session: dbSession });
+    
+    // If future logic updates LearningProgress here, it should pass { session: dbSession }
+    
+    await dbSession.commitTransaction();
+  } catch (error) {
+    await dbSession.abortTransaction();
+    console.error("Transaction aborted in finalizeInterview:", error);
+    throw error;
+  } finally {
+    dbSession.endSession();
+  }
 
   return {
     overallScore,

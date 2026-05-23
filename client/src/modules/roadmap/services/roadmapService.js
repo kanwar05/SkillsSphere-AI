@@ -55,3 +55,26 @@ export const verifyTopic = async (studentId, topicId, isVerified) => {
     token: getToken(),
   });
 };
+
+export const addTutorMilestone = async (studentId, topicName) => {
+  return await apiRequest("/api/roadmap/tutor/add-milestone", {
+    method: "POST",
+    body: { studentId, topicName },
+    token: getToken(),
+  });
+};
+
+export const optInRecruiterTracking = async (recruiterId) => {
+  return await apiRequest("/api/roadmap/student/opt-in-tracking", {
+    method: "POST",
+    body: { recruiterId },
+    token: getToken(),
+  });
+};
+
+export const getTrackedRoadmaps = async () => {
+  return await apiRequest("/api/roadmap/recruiter/tracked", {
+    method: "GET",
+    token: getToken(),
+  });
+};

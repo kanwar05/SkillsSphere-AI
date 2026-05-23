@@ -65,3 +65,18 @@ export const endClassroomSession = asyncHandler(async (req, res, next) => {
     data: session,
   });
 });
+
+/**
+ * @desc    Get all active classroom sessions
+ * @route   GET /api/classrooms/active
+ * @access  Private (Students and Tutors)
+ */
+export const getActiveClassroomSessions = asyncHandler(async (req, res, next) => {
+  const sessions = await classroomService.getActiveSessions();
+
+  res.status(200).json({
+    success: true,
+    data: sessions,
+  });
+});
+

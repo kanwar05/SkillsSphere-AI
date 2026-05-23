@@ -158,4 +158,72 @@ router.post("/tutor/assign-resource", authorizeRoles("tutor"), roadmapController
  */
 router.post("/tutor/verify-topic", authorizeRoles("tutor"), roadmapController.verifyTopic);
 
+/**
+ * @openapi
+ * /api/roadmap/tutor/add-milestone:
+ *   post:
+ *     summary: Add a custom milestone to a student's roadmap (Tutors only)
+ *     tags: [Roadmap]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [studentId, topicName]
+ *             properties:
+ *               studentId:
+ *                 type: string
+ *               topicName:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Custom milestone added successfully
+ */
+router.post("/tutor/add-milestone", authorizeRoles("tutor"), roadmapController.addTutorMilestone);
+
+// Student endpoints (Tracking)
+
+/**
+ * @openapi
+ * /api/roadmap/student/opt-in-tracking:
+ *   post:
+ *     summary: Opt-in for a recruiter to track the roadmap (Student only)
+ *     tags: [Roadmap]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [recruiterId]
+ *             properties:
+ *               recruiterId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Successfully opted in for tracking
+ */
+router.post("/student/opt-in-tracking", authorizeRoles("student"), roadmapController.optInRecruiterTracking);
+
+// Recruiter endpoints
+
+/**
+ * @openapi
+ * /api/roadmap/recruiter/tracked:
+ *   get:
+ *     summary: Get all roadmaps tracked by the current recruiter (Recruiter only)
+ *     tags: [Roadmap]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of tracked roadmaps
+ */
+router.get("/recruiter/tracked", authorizeRoles("recruiter"), roadmapController.getTrackedRoadmaps);
+
 export default router;

@@ -100,22 +100,37 @@ export default function gapAnalyzer({
     categorizedSuggestions.strategic.push("You have a solid technical foundation. Consider linking open-source contributions or live deployments to provide proof-of-work for your top skills.");
   }
 
+  // 5. 🤝 Contribution Milestones
+  const contributionSuggestions = [];
+  const field = (resumeText || "").toLowerCase();
+  
+  if (field.includes("react") || field.includes("frontend") || field.includes("html") || field.includes("css")) {
+    contributionSuggestions.push("Make 1 open-source contribution using React or your primary frontend framework");
+  } else if (field.includes("node") || field.includes("backend") || field.includes("python") || field.includes("java")) {
+    contributionSuggestions.push("Fix a beginner-friendly issue in a public backend repository");
+  } else if (field.includes("devops") || field.includes("docker") || field.includes("aws")) {
+    contributionSuggestions.push("Contribute infrastructure or CI/CD improvements to an open-source project");
+  } else {
+    contributionSuggestions.push("Publish a GitHub project demonstrating your core skills and best practices");
+  }
+
   // Flatten and prioritize
   const allSuggestions = [
-    ...categorizedSuggestions.critical.map(s => ({ priority: "Critical", text: s, icon: "AlertCircle" })),
-    ...categorizedSuggestions.strategic.map(s => ({ priority: "Strategic", text: s, icon: "Zap" })),
-    ...categorizedSuggestions.optimization.map(s => ({ priority: "Optimization", text: s, icon: "Layout" }))
+    ...categorizedSuggestions.critical.map(s => ({ priority: "Critical", text: s, icon: "AlertCircle", type: "learning" })),
+    ...categorizedSuggestions.strategic.map(s => ({ priority: "Strategic", text: s, icon: "Zap", type: "learning" })),
+    ...categorizedSuggestions.optimization.map(s => ({ priority: "Optimization", text: s, icon: "Layout", type: "learning" })),
+    ...contributionSuggestions.map(s => ({ priority: "Contribution", text: s, icon: "Star", type: "contribution" }))
   ];
 
   // If still too few, add highly contextual polish tips
   if (allSuggestions.length < 4) {
     const wordCount = resumeText.split(/\s+/).filter(Boolean).length;
     if (wordCount > 1000) {
-      allSuggestions.push({ priority: "Polish", text: "Your resume is quite long (~3+ pages). Aim for a concise 1-2 page format for maximum engagement.", icon: "CheckCircle2" });
+      allSuggestions.push({ priority: "Polish", text: "Your resume is quite long (~3+ pages). Aim for a concise 1-2 page format for maximum engagement.", icon: "CheckCircle2", type: "learning" });
     } else if (wordCount > 0 && wordCount < 200) {
-      allSuggestions.push({ priority: "Polish", text: "Your resume is very brief. Consider detailing your projects or certifications to show more depth.", icon: "CheckCircle2" });
+      allSuggestions.push({ priority: "Polish", text: "Your resume is very brief. Consider detailing your projects or certifications to show more depth.", icon: "CheckCircle2", type: "learning" });
     } else {
-      allSuggestions.push({ priority: "Polish", text: "Your resume is in the top percentile! To maintain this competitive edge, ensure you update your metrics every 3-6 months.", icon: "CheckCircle2" });
+      allSuggestions.push({ priority: "Polish", text: "Your resume is in the top percentile! To maintain this competitive edge, ensure you update your metrics every 3-6 months.", icon: "CheckCircle2", type: "learning" });
     }
   }
 

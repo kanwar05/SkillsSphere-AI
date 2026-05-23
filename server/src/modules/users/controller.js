@@ -21,15 +21,30 @@ import { cascadeDeleteUser } from "../../utils/cascadeDelete.js";
  * @access  Private
  */
 export const updateProfile = asyncHandler(async (req, res, next) => {
-  const { name } = req.body;
+  const { name, company, companyWebsite } = req.body;
 
   if (!name || name.trim().length < 2) {
     return next(new AppError("Please provide a valid name (at least 2 characters)", 400));
   }
 
+  const updateData = { name: name.trim() };
+
+  if (req.user.role === "recruiter") {
+    if (company !== undefined) {
+      updateData.company = company ? company.trim() : null;
+    }
+    if (companyWebsite !== undefined) {
+      let web = companyWebsite ? companyWebsite.trim() : null;
+      if (web && !/^https?:\/\//i.test(web)) {
+        web = `https://${web}`;
+      }
+      updateData.companyWebsite = web;
+    }
+  }
+
   const updatedUser = await User.findByIdAndUpdate(
     req.user._id,
-    { name: name.trim() },
+    updateData,
     { new: true, runValidators: true }
   ).select("-password -__v");
 

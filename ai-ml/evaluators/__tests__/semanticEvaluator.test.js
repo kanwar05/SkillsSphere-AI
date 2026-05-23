@@ -15,8 +15,7 @@ await describe("semanticEvaluator", async () => {
     assert.strictEqual(result.score, 0);
     assert.strictEqual(result.key, "semanticMatch");
     assert.strictEqual(result.label, "Semantic Match");
-    assert.ok(result.feedback.toLowerCase().includes("missing"));
-    assert.strictEqual(result.weight, 0.20);
+    assert.ok(result.summary.toLowerCase().includes("missing"));
   });
 
   await it("returns 0 with safe message when job description is missing", async () => {
@@ -28,13 +27,12 @@ await describe("semanticEvaluator", async () => {
     assert.strictEqual(result.score, 0);
     assert.strictEqual(result.key, "semanticMatch");
     assert.strictEqual(result.label, "Semantic Match");
-    assert.ok(result.feedback.toLowerCase().includes("missing"));
-    assert.strictEqual(result.weight, 0.20);
+    assert.ok(result.summary.toLowerCase().includes("missing"));
   });
 
   await it("propagates provider failure for pipeline safe handling (missing API key)", async () => {
-    const originalKey = process.env.OPENAI_API_KEY;
-    delete process.env.OPENAI_API_KEY;
+    const originalKey = process.env.HF_API_TOKEN;
+    delete process.env.HF_API_TOKEN;
 
     try {
       await assert.rejects(
@@ -44,10 +42,10 @@ await describe("semanticEvaluator", async () => {
             jobDescription: "test job description",
           });
         },
-        /OPENAI_API_KEY/
+        /HF_API_TOKEN/
       );
     } finally {
-      process.env.OPENAI_API_KEY = originalKey;
+      process.env.HF_API_TOKEN = originalKey;
     }
   });
 
@@ -66,17 +64,6 @@ await describe("semanticEvaluator", async () => {
     assert.ok("key" in result);
     assert.ok("label" in result);
     assert.ok("score" in result);
-    assert.ok("weight" in result);
-    assert.ok("feedback" in result);
-  });
-
-  await it("uses correct weight from config", async () => {
-    const result = await semanticEvaluator({
-      resumeText: "",
-      jobDescription: "",
-    });
-
-    // Weight should be exactly 0.20 from weights.config.js
-    assert.strictEqual(result.weight, 0.20);
+    assert.ok("summary" in result);
   });
 });

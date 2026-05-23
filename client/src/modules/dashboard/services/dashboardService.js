@@ -30,3 +30,13 @@ export const getCoverLetterHistory = async () => {
   });
 };
 
+export const getRoleAnalytics = async () => {
+  const TOKEN_KEY = "skillssphere.auth.token";
+  const token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+
+  return apiRequest("/api/analytics/dashboard", {
+    method: "GET",
+    token,
+  });
+};
+

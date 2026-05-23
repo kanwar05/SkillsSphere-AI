@@ -5,6 +5,11 @@ const topicProgressSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  type: {
+    type: String,
+    enum: ["learning", "contribution"],
+    default: "learning",
+  },
   status: {
     type: String,
     enum: ["not_started", "in_progress", "completed"],
@@ -38,7 +43,11 @@ const topicProgressSchema = new mongoose.Schema({
         ref: "User",
       }
     }
-  ]
+  ],
+  addedByTutor: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 const learningProgressSchema = new mongoose.Schema(
@@ -58,6 +67,12 @@ const learningProgressSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    recruitersTracking: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      }
+    ],
   },
   { 
     timestamps: true,

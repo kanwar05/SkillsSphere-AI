@@ -41,14 +41,14 @@ export const resolveProtectedFilePath = (url) => {
 /**
  * Helper to return a URL suitable for use in <img src=""> for protected files.
  * If the input is already a public URL, it is returned unchanged. For protected
- * server paths ("/api/files/..."), this returns the path and, if a token is
- * provided, appends it as `access_token` query param to allow simple fetching
- * in environments where Authorization header cannot be set for images.
+ * server paths ("/api/files/..."), this returns the path without any token in
+ * the URL. Components needing authenticated file access should use the signed
+ * URL service (getSignedFileUrl) for <img> tags, or the Authorization header
+ * for fetch-based requests.
  */
-export const getProtectedAssetUrl = (url, token) => {
+export const getProtectedAssetUrl = (url) => {
   if (!url) return null;
   const apiPath = resolveProtectedFilePath(url);
   if (!apiPath) return url;
-  if (token) return `${apiPath}?access_token=${encodeURIComponent(token)}`;
   return apiPath;
 };

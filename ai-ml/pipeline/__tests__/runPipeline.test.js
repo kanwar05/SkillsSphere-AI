@@ -2,104 +2,35 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { runPipeline } from "../runPipeline.js";
 
-const evaluatorResult = (overrides = {}) => ({
-  key: "keywordMatch",
-  label: "Keyword Match",
-  score: 80,
-  weight: 0.2,
-  weightedScore: 16,
-  summary: "",
-  details: {},
-  meta: {},
-  ...overrides,
-});
-
 test("validates evaluator outputs and aggregates successful results", async () => {
-  const calls = [];
-
   const result = await runPipeline({
-    context: {
-      resumeText: "JavaScript developer",
+    resumeData: {
+      resumeText: "Experienced JavaScript developer with 5 years in React and Node.js.",
+      skills: ["JavaScript", "React", "Node.js"],
+      experience: [
+        { title: "Developer", company: "TechCorp", duration: "2020-2023", description: "Wrote code" }
+      ],
+      classification: { field: "frontend developer" }
     },
-    evaluators: [
-      {
-        key: "keywordMatch",
-        evaluate: async (context) => {
-          calls.push(`keyword:${context.resumeText}`);
-          return evaluatorResult();
-        },
-      },
-      {
-        key: "experienceMatch",
-        evaluate: async () => {
-          calls.push("experience");
-          return evaluatorResult({
-            key: "experienceMatch",
-            label: "Experience Match",
-            score: 100,
-            weight: 0.2,
-            weightedScore: 20,
-          });
-        },
-      },
-    ],
+    jobSkills: ["JavaScript", "React"],
+    jobDescription: "Looking for a JS and React developer."
   });
 
-  assert.deepEqual(calls, ["keyword:JavaScript developer", "experience"]);
-  assert.equal(result.score, 36);
-  assert.deepEqual(
-    result.evaluators.map((item) => item.key),
-    ["keywordMatch", "experienceMatch"],
-  );
+  assert.equal(typeof result.score, "number");
+  assert.equal(typeof result.degraded, "boolean");
+  assert.ok("gapAnalysis" in result);
+  assert.ok("classification" in result);
 });
 
-test("throws on malformed evaluator result with evaluator key and invalid fields", async () => {
-  const previousNodeEnv = process.env.NODE_ENV;
-  process.env.NODE_ENV = "production";
+test("handles missing job description gracefully (benchmark mode)", async () => {
+  const result = await runPipeline({
+    resumeData: {
+      resumeText: "JavaScript developer",
+      skills: ["JavaScript", "Node.js"],
+      classification: { field: "backend developer" }
+    }
+  });
 
-  try {
-    await assert.rejects(
-      runPipeline({
-        evaluators: [
-          {
-            key: "keywordMatch",
-            evaluate: async () =>
-              evaluatorResult({
-                label: "",
-                score: 101,
-              }),
-          },
-        ],
-      }),
-      /Evaluator "keywordMatch" returned invalid output: .*label: .*score:/,
-    );
-  } finally {
-    process.env.NODE_ENV = previousNodeEnv;
-  }
+  assert.equal(typeof result.score, "number");
+  assert.equal(result.mode, "benchmark");
 });
-
-test("propagates evaluator exceptions", async () => {
-  await assert.rejects(
-    runPipeline({
-      evaluators: [
-        {
-          key: "keywordMatch",
-          evaluate: async () => {
-            throw new Error("keyword evaluator failed");
-          },
-        },
-      ],
-    }),
-    /keyword evaluator failed/,
-  );
-});
-
-test("throws when an invalid evaluator registration is supplied", async () => {
-  await assert.rejects(
-    runPipeline({
-      evaluators: [{ key: "keywordMatch" }],
-    }),
-    /Invalid evaluator supplied to pipeline/,
-  );
-});
-

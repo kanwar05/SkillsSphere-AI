@@ -59,6 +59,14 @@ const SocketNotificationListener = () => {
         }
       });
 
+      socketRef.current.on("new-notification", (notif) => {
+        if (notif.type === "skill_gap_alert") {
+          toast.error(notif.message, notif.title || "Skill Gap Alert");
+        } else {
+          toast.success(notif.message, notif.title || "Notification");
+        }
+      });
+
       socketRef.current.on("disconnect", (reason) => {
         // Handled
       });

@@ -11,7 +11,7 @@ vi.mock("../../../../services/apiClient", () => ({
   apiRequest: vi.fn(),
   normalizeApiError: vi.fn((error) => ({
     message: error.message || "Something went wrong",
-    status: error.status || 500,
+    status: error.status ?? 500,
     errors: error.errors || {},
   })),
 }));
@@ -24,7 +24,8 @@ describe("jobPostingService", () => {
   });
 
   afterEach(() => {
-    vi.resetAllMocks();
+    // Only clear mock history to preserve implementations
+    vi.clearAllMocks();
   });
 
   describe("createJobPosting", () => {
@@ -185,7 +186,13 @@ describe("jobPostingService", () => {
 
       const result = await getRecruiterJobs(mockToken);
 
-      expect(result).toEqual({ success: true, jobs: mockJobs });
+      expect(result).toEqual({ 
+        success: true, 
+        jobs: mockJobs,
+        currentPage: 1,
+        totalPages: 1,
+        totalCount: 0
+      });
     });
 
     it("handles response with data field instead of jobs", async () => {
@@ -195,6 +202,7 @@ describe("jobPostingService", () => {
       const result = await getRecruiterJobs(mockToken);
 
       expect(result.jobs).toEqual(mockJobs);
+      expect(result.currentPage).toBe(1);
     });
 
     it("returns empty array when no jobs field in response", async () => {
@@ -203,6 +211,7 @@ describe("jobPostingService", () => {
       const result = await getRecruiterJobs(mockToken);
 
       expect(result.jobs).toEqual([]);
+      expect(result.totalCount).toBe(0);
     });
 
     it("throws normalized error on failure", async () => {

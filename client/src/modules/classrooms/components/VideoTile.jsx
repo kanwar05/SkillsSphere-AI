@@ -11,7 +11,7 @@ export default function VideoTile({ stream, user, isMuted, isHandRaised, isScree
   }, [stream]);
 
   return (
-    <div className="relative rounded-xl overflow-hidden bg-slate-800 border border-slate-700 shadow-lg aspect-video flex items-center justify-center">
+    <div className="relative rounded-xl overflow-hidden bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-lg aspect-video flex items-center justify-center">
       {stream ? (
         <video
           ref={videoRef}
@@ -21,8 +21,8 @@ export default function VideoTile({ stream, user, isMuted, isHandRaised, isScree
           className={`w-full h-full object-cover ${isLocal && !isScreenShare ? "scale-x-[-1]" : ""}`}
         />
       ) : (
-        <div className="flex flex-col items-center justify-center text-slate-400">
-          <div className="w-16 h-16 rounded-full bg-slate-700 flex items-center justify-center mb-2 text-2xl font-bold text-white">
+        <div className="flex flex-col items-center justify-center text-gray-500 dark:text-slate-400">
+          <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center mb-2 text-2xl font-bold text-gray-900 dark:text-white">
             {user?.name?.charAt(0) || "U"}
           </div>
           <span>{user?.name || "Participant"}</span>

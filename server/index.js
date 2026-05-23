@@ -14,11 +14,13 @@ import matchingRoutes from "./src/modules/matching/routes.js";
 import dashboardRoutes from "./src/modules/dashboard/routes.js";
 import coverLetterRoutes from "./src/modules/coverLetters/routes.js";
 import classroomRoutes from "./src/modules/classrooms/routes.js";
+import notificationRoutes from "./src/modules/notifications/routes.js";
 import userRoutes from "./src/modules/users/routes.js";
 import interviewRoutes from "./src/modules/interviews/routes.js";
 import fileRoutes from "./src/modules/files/routes.js";
 import notificationRoutes from "./src/modules/notifications/routes.js";
 import { initClassroomSockets } from "./src/modules/classrooms/socket.js";
+import { initInterviewSockets } from "./src/modules/interviews/socket.js";
 import globalErrorHandler from "./src/middleware/errorMiddleware.js";
 import { logEvaluatorConfig } from "./src/config/evaluatorConfig.js";
 import { setIO } from "./src/utils/socketIO.js";
@@ -69,6 +71,13 @@ setIO(io);
 app.use(cors());
 app.use(express.json());
 
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader("Referrer-Policy", "no-referrer");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  next();
+});
+
 await connectDB();
 logEvaluatorConfig();
 
@@ -115,6 +124,7 @@ app.use("/api/analytics", analyticsRoutes);
 
 initClassroomSockets(io);
 initNotificationSockets(io);
+initInterviewSockets(io);
 
 app.use(globalErrorHandler);
 

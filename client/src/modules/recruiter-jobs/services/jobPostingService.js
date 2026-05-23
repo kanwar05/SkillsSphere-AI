@@ -10,7 +10,15 @@ import { apiRequest, normalizeApiError } from "../../../services/apiClient";
  * Normalize service errors for consistent frontend handling
  */
 const handleServiceError = (error) => {
-  const normalized = normalizeApiError(error);
+  let normalized = normalizeApiError(error);
+
+  if (!normalized || typeof normalized !== "object") {
+    normalized = {
+      message: error?.message || "Something went wrong",
+      status: error?.status || 500,
+      errors: error?.errors || {},
+    };
+  }
 
   // Map status codes to user-friendly messages
   if (normalized.status === 401 || normalized.status === 403) {
@@ -188,9 +196,12 @@ export const deleteJobPosting = async (id, token) => {
  * @param {string} token - Auth bearer token
  * @returns {Promise<{success: boolean, applications: Array}>}
  */
-export const getJobApplications = async (jobId, token) => {
+export const getJobApplications = async (jobId, token, status = "") => {
   try {
-    const response = await apiRequest(`/api/jobs/${jobId}/applications`, { token });
+    const url = status 
+      ? `/api/jobs/${jobId}/applications?status=${encodeURIComponent(status)}`
+      : `/api/jobs/${jobId}/applications`;
+    const response = await apiRequest(url, { token });
     return {
       success: true,
       applications: response.applications || [],

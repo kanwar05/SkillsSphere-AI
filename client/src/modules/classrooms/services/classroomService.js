@@ -47,3 +47,15 @@ export const endClassroomSession = async (roomId, token) => {
     token,
   });
 };
+
+/**
+ * Get all active classroom sessions
+ * @param {string} token - User's JWT token
+ */
+export const getActiveClassroomSessions = async (token) => {
+  return await apiRequest("/api/classrooms/active", {
+    method: "GET",
+    token,
+  });
+};
+

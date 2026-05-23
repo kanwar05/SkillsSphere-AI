@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import mongoose from "mongoose";
 import SemanticCache from "../../server/src/database/models/SemanticCache.js";
 
 const HF_MODEL_URL =
@@ -91,12 +92,20 @@ export const semanticEvaluator = async ({ resumeText = "", jobDescription = "" }
     };
   }
 
+  if (!process.env.HF_API_TOKEN) {
+    throw new Error("HF_API_TOKEN environment variable is not set");
+  }
+
   try {
     const resumeHash = getHash(resumeText);
     const jdHash = getHash(jobDescription);
 
-    // 🔍 Check cache first
-    const cachedResult = await SemanticCache.findOne({ resumeHash, jdHash });
+    // 🔍 Check cache first - ONLY IF CONNECTED TO DB
+    let cachedResult = null;
+    if (mongoose.connection.readyState === 1) {
+      cachedResult = await SemanticCache.findOne({ resumeHash, jdHash });
+    }
+    
     if (cachedResult) {
       console.log("[semanticEvaluator] ⚡ Cache hit! Skipping API call.");
       return {
@@ -132,16 +141,18 @@ export const semanticEvaluator = async ({ resumeText = "", jobDescription = "" }
       }
     };
 
-    // 💾 Save to cache
-    await SemanticCache.create({
-      resumeHash,
-      jdHash,
-      similarity: normalized,
-      score,
-      summary: feedback,
-      details: result.details,
-      meta: result.meta,
-    });
+    // 💾 Save to cache ONLY IF CONNECTED TO DB
+    if (mongoose.connection.readyState === 1) {
+      await SemanticCache.create({
+        resumeHash,
+        jdHash,
+        similarity: normalized,
+        score,
+        summary: feedback,
+        details: result.details,
+        meta: result.meta,
+      });
+    }
 
     return result;
   } catch (error) {

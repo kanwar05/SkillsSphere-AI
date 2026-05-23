@@ -13,11 +13,11 @@ vi.mock('../../services/jobPostingService', () => ({
 }))
 
 // Mock components
-vi.mock('../../../shared/landing/Navbar', () => ({
+vi.mock('../../../../shared/landing/Navbar', () => ({
   default: () => <nav data-testid="navbar">Navbar</nav>,
 }))
 
-vi.mock('../../../shared/components/Input', () => ({
+vi.mock('../../../../shared/components/Input', () => ({
   default: ({ value, onChange, ...props }) => (
     <input
       type="text"
@@ -29,11 +29,11 @@ vi.mock('../../../shared/components/Input', () => ({
   ),
 }))
 
-vi.mock('../../../shared/components/LoadingState', () => ({
+vi.mock('../../../../shared/components/LoadingState', () => ({
   default: ({ message }) => <div data-testid="loading-state">{message}</div>,
 }))
 
-vi.mock('../../../shared/components/ErrorState', () => ({
+vi.mock('../../../../shared/components/ErrorState', () => ({
   default: ({ message, onRetry }) => (
     <div data-testid="error-state">
       <span>{message}</span>
@@ -42,7 +42,7 @@ vi.mock('../../../shared/components/ErrorState', () => ({
   ),
 }))
 
-vi.mock('../../../shared/components/EmptyState', () => ({
+vi.mock('../../../../shared/components/EmptyState', () => ({
   default: ({ title, description, action }) => (
     <div data-testid="empty-state">
       <h3>{title}</h3>
@@ -52,15 +52,25 @@ vi.mock('../../../shared/components/EmptyState', () => ({
   ),
 }))
 
-vi.mock('../../components/JobPostingCard', () => ({
-  default: ({ job, onEdit, onViewStats }) => (
-    <div data-testid={`job-card-${job._id || job.id}`}>
-      <h4>{job.title}</h4>
-      <button onClick={() => onEdit(job)} data-testid={`edit-${job._id || job.id}`}>Edit</button>
-      <button onClick={() => onViewStats(job)} data-testid={`stats-${job._id || job.id}`}>Stats</button>
-    </div>
-  ),
+vi.mock('../../../student-jobs/components/JobCardSkeleton', () => ({
+  default: () => <div data-testid="job-card-skeleton">Skeleton</div>
 }))
+
+vi.mock('../../../../shared/components', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    JobViewerCard: ({ job, viewerRole, onEdit, onDelete, onViewStats, onViewApplicants }) => (
+      <div data-testid={`job-card-${job._id || job.id}`}>
+        <h4>{job.title}</h4>
+        <button onClick={() => onEdit(job)} data-testid={`edit-${job._id || job.id}`}>Edit</button>
+        <button onClick={() => onViewStats(job)} data-testid={`stats-${job._id || job.id}`}>Stats</button>
+        <button onClick={() => onViewApplicants(job)} data-testid={`applicants-${job._id || job.id}`}>Applicants</button>
+        <button onClick={() => onDelete(job)} data-testid={`delete-${job._id || job.id}`}>Delete</button>
+      </div>
+    )
+  }
+})
 
 const createMockStore = (token = 'test-token') => {
   return configureStore({
@@ -90,7 +100,7 @@ describe('RecruiterJobsPage', () => {
 
     renderWithProviders(<RecruiterJobsPage />)
 
-    expect(screen.getByTestId('loading-state')).toHaveTextContent('Fetching your job postings...')
+    expect(screen.getAllByTestId('job-card-skeleton')).toHaveLength(6)
   })
 
   it('fetches and displays jobs on mount', async () => {
@@ -103,7 +113,7 @@ describe('RecruiterJobsPage', () => {
     renderWithProviders(<RecruiterJobsPage />)
 
     await waitFor(() => {
-      expect(jobPostingService.getRecruiterJobs).toHaveBeenCalledWith('test-token')
+      expect(jobPostingService.getRecruiterJobs).toHaveBeenCalledWith('test-token', 1, 6)
       expect(screen.getByTestId('job-card-1')).toBeInTheDocument()
       expect(screen.getByTestId('job-card-2')).toBeInTheDocument()
       expect(screen.getByText('Senior Engineer')).toBeInTheDocument()
@@ -141,7 +151,7 @@ describe('RecruiterJobsPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('No matching jobs found')).toBeInTheDocument()
-      expect(screen.getByText('Try adjusting your search filters.')).toBeInTheDocument()
+      expect(screen.getByText('No matching skills found. Try another keyword.')).toBeInTheDocument()
     })
   })
 

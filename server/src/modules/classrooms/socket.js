@@ -6,9 +6,9 @@ export function initClassroomSockets(io) {
 
     // Join a specific room
     socket.on("join-room", async ({ roomId }) => {
-      socket.join(roomId);
-
       try {
+        socket.join(roomId);
+        
         // Store user info in socket instance to easily retrieve later
         const user = socket.user; // Secure, derived from JWT
         socket.data = { roomId, user };

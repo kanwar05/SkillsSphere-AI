@@ -5,6 +5,7 @@ import {
   getTutorClassroomSessions,
   getClassroomSessionByRoomId,
   endClassroomSession,
+  getActiveClassroomSessions,
 } from "./controller.js";
 
 const router = express.Router();
@@ -54,6 +55,21 @@ router.post("/create", authorizeRoles("tutor"), createClassroomSession);
  *         description: Success
  */
 router.get("/my-sessions", authorizeRoles("tutor"), getTutorClassroomSessions);
+
+/**
+ * @openapi
+ * /api/classrooms/active:
+ *   get:
+ *     summary: Get all active classroom sessions
+ *     tags: [Classrooms]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Success
+ */
+router.get("/active", getActiveClassroomSessions);
+
 
 /**
  * @openapi

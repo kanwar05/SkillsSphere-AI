@@ -151,6 +151,9 @@ const JobViewerCard = ({
     openings,
   } = job;
 
+  const companyName = recruiter?.company || job.company || "SkillSphere Partner";
+  const companyWebsite = recruiter?.companyWebsite || job.companyWebsite;
+
   const canApply = status === "open" && !isApplied;
 
   return (
@@ -210,7 +213,19 @@ const JobViewerCard = ({
                   )}
                 </div>
                 <p className="text-slate-400 font-medium mt-0.5 truncate">
-                  {recruiter?.company || job.company || "SkillSphere Partner"}
+                  {companyWebsite ? (
+                    <a
+                      href={companyWebsite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 hover:underline inline-flex items-center gap-1.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {companyName} <ExternalLink size={14} className="shrink-0" />
+                    </a>
+                  ) : (
+                    companyName
+                  )}
                 </p>
               </div>
               <div className="text-slate-500 group-hover:text-blue-400 transition-colors shrink-0 mt-1">
@@ -532,10 +547,12 @@ JobViewerCard.propTypes = {
       name: PropTypes.string,
       email: PropTypes.string,
       company: PropTypes.string,
+      companyWebsite: PropTypes.string,
     }),
     createdAt: PropTypes.string,
     // Legacy / optional fields some views may pass
     company: PropTypes.string,
+    companyWebsite: PropTypes.string,
     type: PropTypes.string,
     openings: PropTypes.number,
   }).isRequired,

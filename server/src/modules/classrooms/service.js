@@ -82,3 +82,15 @@ export const endSession = async (roomId, hostId) => {
 
   return session;
 };
+
+/**
+ * Fetch all currently active classroom sessions
+ * @returns {Promise<Array>} List of active session documents
+ */
+export const getActiveSessions = async () => {
+  return await ClassroomSession.find({ status: "active" })
+    .populate("host", "name profilePic role")
+    .sort({ createdAt: -1 })
+    .lean();
+};
+

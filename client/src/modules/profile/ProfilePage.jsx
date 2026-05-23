@@ -4,7 +4,8 @@ import ProfileSkeleton from "./components/ProfileSkeleton";
 import {
   User, Mail, Shield, Calendar, Clock, Pencil, X, Check,
   ChevronLeft, BadgeCheck, AlertCircle, Trash2, LogOut,
-  Info, Lock, Sparkles, Activity, Camera, Upload, MapPin
+  Info, Lock, Sparkles, Activity, Camera, Upload, MapPin,
+  Briefcase, Globe, ExternalLink
 } from "lucide-react";
 import Input from "../../shared/components/Input";
 import Button from "../../shared/components/Button";
@@ -188,7 +189,11 @@ const ProfilePage = () => {
 
   const [activeTab, setActiveTab] = useState("info");
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ name: user?.name || "" });
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    company: user?.company || "",
+    companyWebsite: user?.companyWebsite || "",
+  });
   const [errors, setErrors] = useState({});
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -247,7 +252,11 @@ const ProfilePage = () => {
   };
 
   const handleEditClick = () => {
-    setFormData({ name: user?.name || "" });
+    setFormData({
+      name: user?.name || "",
+      company: user?.company || "",
+      companyWebsite: user?.companyWebsite || "",
+    });
     setErrors({});
     setSaveSuccess(false);
     setApiError("");
@@ -255,7 +264,11 @@ const ProfilePage = () => {
   };
 
   const handleCancel = () => {
-    setFormData({ name: user?.name || "" });
+    setFormData({
+      name: user?.name || "",
+      company: user?.company || "",
+      companyWebsite: user?.companyWebsite || "",
+    });
     setErrors({});
     setApiError("");
     setIsEditing(false);
@@ -277,7 +290,12 @@ const ProfilePage = () => {
     setIsSaving(true);
     try {
       setApiError("");
-      const response = await updateProfile({ name: trimmed }, token);
+      const payload = { name: trimmed };
+      if (user.role === "recruiter") {
+        payload.company = formData.company ? formData.company.trim() : "";
+        payload.companyWebsite = formData.companyWebsite ? formData.companyWebsite.trim() : "";
+      }
+      const response = await updateProfile(payload, token);
       dispatch(updateUserProfile(response.user));
       setSaveSuccess(true);
       setIsEditing(false);
@@ -488,23 +506,74 @@ const ProfilePage = () => {
                         <Shield size={15} /><span>{roleConfig.label}</span>
                       </div>
                     </div>
+                    {user.role === "recruiter" && (
+                      <>
+                        <Input
+                          id="company"
+                          label="Company Name"
+                          placeholder="Enter company name"
+                          value={formData.company}
+                          onChange={handleChange}
+                          leftIcon={<Briefcase size={16} />}
+                        />
+                        <Input
+                          id="companyWebsite"
+                          label="Company Website"
+                          placeholder="e.g. www.mycompany.com"
+                          value={formData.companyWebsite}
+                          onChange={handleChange}
+                          leftIcon={<Globe size={16} />}
+                          helperText="Link to your company's official website."
+                        />
+                      </>
+                    )}
                   </form>
                 ) : (
                   <div className="flex flex-col divide-y divide-slate-100 dark:divide-white/5">
-                    {[
-                      { icon: <User size={15} />, label: "Full Name", value: user.name },
-                      { icon: <Mail size={15} />, label: "Email", value: user.email },
-                      { icon: <Shield size={15} />, label: "Role", value: `${roleConfig.icon} ${roleConfig.label}` },
-                      { icon: <BadgeCheck size={15} />, label: "Verification", value: verificationBadge },
-                    ].map((row, i) => (
-                      <div key={i} className="flex items-start gap-3 py-3.5">
-                        <span className="mt-0.5 text-slate-400 dark:text-slate-500 flex-shrink-0">{row.icon}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">{row.label}</p>
-                          <div className="text-sm text-slate-700 dark:text-slate-200">{row.value}</div>
+                    {(() => {
+                      const infoRows = [
+                        { icon: <User size={15} />, label: "Full Name", value: user.name },
+                        { icon: <Mail size={15} />, label: "Email", value: user.email },
+                        { icon: <Shield size={15} />, label: "Role", value: `${roleConfig.icon} ${roleConfig.label}` },
+                        { icon: <BadgeCheck size={15} />, label: "Verification", value: verificationBadge },
+                      ];
+
+                      if (user.role === "recruiter") {
+                        infoRows.push(
+                          {
+                            icon: <Briefcase size={15} />,
+                            label: "Company",
+                            value: user.company || <span className="text-slate-400 italic">Not set</span>
+                          },
+                          {
+                            icon: <Globe size={15} />,
+                            label: "Company Website",
+                            value: user.companyWebsite ? (
+                              <a
+                                href={user.companyWebsite}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1"
+                              >
+                                {user.companyWebsite} <ExternalLink size={12} />
+                              </a>
+                            ) : (
+                              <span className="text-slate-400 italic">Not set</span>
+                            )
+                          }
+                        );
+                      }
+
+                      return infoRows.map((row, i) => (
+                        <div key={i} className="flex items-start gap-3 py-3.5">
+                          <span className="mt-0.5 text-slate-400 dark:text-slate-500 flex-shrink-0">{row.icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">{row.label}</p>
+                            <div className="text-sm text-slate-700 dark:text-slate-200">{row.value}</div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ));
+                    })()}
                   </div>
                 )}
               </div>

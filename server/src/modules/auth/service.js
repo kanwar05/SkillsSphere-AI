@@ -5,6 +5,7 @@ import User from "../../database/models/User.js";
 import { OAuth2Client } from "google-auth-library";
 import { sendOTP } from "../../utils/emailService.js";
 import AppError from "../../utils/AppError.js";
+import { consumeAuthCode } from "../../utils/authCodeStore.js";
 import {
   isLocalPasswordAccount,
   LOCAL_EMAIL_REGISTERED_MESSAGE,
@@ -51,13 +52,14 @@ export const registerUserAndIssueToken = async ({ name, email, password, role })
 
   const otp = generateOTP();
   const otpExpiry = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+  const hashedOtp = await bcrypt.hash(otp, SALT_ROUNDS);
 
   const user = await User.create({
     name,
     email,
     password: hashedPassword,
     role,
-    verificationToken: skipVerification ? undefined : otp,
+    verificationToken: skipVerification ? undefined : hashedOtp,
     verificationTokenExpires: skipVerification ? undefined : otpExpiry,
     isVerified: skipVerification,
   });
@@ -94,7 +96,7 @@ export const verifyUserEmail = async (email, otp) => {
     throw new AppError("Too many attempts. Please request a new OTP.", 429);
   }
 
-  const isMatch = user.verificationToken === otp;
+  const isMatch = await bcrypt.compare(otp, user.verificationToken);
   const isExpired = user.verificationTokenExpires < Date.now();
 
   if (!isMatch || isExpired) {
@@ -122,8 +124,9 @@ export const forgotPasswordRequest = async (email) => {
 
   const otp = generateOTP();
   const otpExpiry = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+  const hashedOtp = await bcrypt.hash(otp, SALT_ROUNDS);
 
-  user.resetPasswordToken = otp;
+  user.resetPasswordToken = hashedOtp;
   user.resetPasswordExpires = otpExpiry;
   user.otpAttempts = 0;
   await user.save();
@@ -145,7 +148,7 @@ export const resetUserPassword = async (email, otp, newPassword) => {
     throw new AppError("Too many attempts. Please request a new code.", 429);
   }
 
-  const isMatch = user.resetPasswordToken === otp;
+  const isMatch = await bcrypt.compare(otp, user.resetPasswordToken);
   const isExpired = user.resetPasswordExpires < Date.now();
 
   if (!isMatch || isExpired) {
@@ -179,8 +182,9 @@ export const resendUserOTP = async (email) => {
 
   const otp = generateOTP();
   const otpExpiry = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+  const hashedOtp = await bcrypt.hash(otp, SALT_ROUNDS);
 
-  user.verificationToken = otp;
+  user.verificationToken = hashedOtp;
   user.verificationTokenExpires = otpExpiry;
   user.otpAttempts = 0;
   await user.save();
@@ -250,6 +254,27 @@ export const findOrCreateGoogleUser = async ({ email, name, picture }) => {
     provider: "google",
     isVerified: true,
   });
+};
+
+// Exchange a one-time auth code for a JWT
+export const exchangeAuthCodeForToken = async (code) => {
+  const userId = consumeAuthCode(code);
+  if (!userId) return null;
+
+  const user = await User.findById(userId);
+  if (!user) return null;
+
+  const token = buildAuthToken(user);
+
+  return {
+    token,
+    user: {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  };
 };
 
 // 🔐 Google Token Verification

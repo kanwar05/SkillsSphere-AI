@@ -9,8 +9,8 @@ test("perfect match returns 100 score and no missing skills", () => {
   });
 
   assert.equal(result.score, 100);
-  assert.deepEqual(result.missingSkills, []);
-  assert.deepEqual(result.matchedSkills, ["react", "nodejs"]);
+  assert.deepEqual(result.details.missingSkills, []);
+  assert.deepEqual(result.details.matchedSkills, ["react", "nodejs"]);
 });
 
 test("partial match includes missing and extra skills", () => {
@@ -20,9 +20,9 @@ test("partial match includes missing and extra skills", () => {
   });
 
   assert.equal(result.score, 50);
-  assert.deepEqual(result.matchedSkills, ["react", "mongodb"]);
-  assert.deepEqual(result.missingSkills, ["docker", "aws"]);
-  assert.deepEqual(result.extraSkills, ["nodejs"]);
+  assert.deepEqual(result.details.matchedSkills, ["react", "mongodb"]);
+  assert.deepEqual(result.details.missingSkills, ["docker", "aws"]);
+  assert.deepEqual(result.details.extraSkills, ["nodejs"]);
 });
 
 test("no match with duplicates dedupes and avoids false positives", () => {
@@ -32,9 +32,9 @@ test("no match with duplicates dedupes and avoids false positives", () => {
   });
 
   assert.equal(result.score, 0);
-  assert.deepEqual(result.matchedSkills, []);
-  assert.deepEqual(result.missingSkills, ["react", "nodejs"]);
-  assert.deepEqual(result.extraSkills, ["python"]);
+  assert.deepEqual(result.details.matchedSkills, []);
+  assert.deepEqual(result.details.missingSkills, ["react", "nodejs"]);
+  assert.deepEqual(result.details.extraSkills, ["python"]);
 });
 
 test("empty job skills avoids division by zero", () => {
@@ -44,5 +44,5 @@ test("empty job skills avoids division by zero", () => {
   });
 
   assert.equal(result.score, 0);
-  assert.ok(result.feedback.includes("No job skills provided for comparison"));
+  assert.ok(result.details.feedback.includes("No job skills provided for comparison"));
 });

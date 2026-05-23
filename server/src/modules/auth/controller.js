@@ -8,13 +8,13 @@ import {
 } from "../../validations/authValidation.js";
 
 import {
+  exchangeAuthCodeForToken,
   forgotPasswordRequest,
   loginUser,
   registerUserAndIssueToken,
   resendUserOTP,
   resetUserPassword,
   verifyGoogleToken,
-  verifyUserEmail,
   findOrCreateGoogleUser,
   LOCAL_EMAIL_REGISTERED_MESSAGE,
 } from "./service.js";
@@ -22,6 +22,7 @@ import {
 import jwt from "jsonwebtoken";
 import AppError from "../../utils/AppError.js";
 import asyncHandler from "../../utils/asyncHandler.js";
+import { generateAuthCode } from "../../utils/authCodeStore.js";
 import {
   getGoogleOAuthConfig,
   GOOGLE_OAUTH_NOT_CONFIGURED_MESSAGE,
@@ -239,15 +240,29 @@ export const googleOAuthCallback = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Generate your app's JWT
-  const jwtToken = jwt.sign(
-    { userId: user._id.toString(), role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
-  );
+  // Generate a short-lived one-time auth code (never expose JWT in URL)
+  const authCode = generateAuthCode(user._id.toString());
 
-  // Redirect to frontend with ONLY the token (no user data in URL)
-  res.redirect(`${callbackUrl}?token=${jwtToken}`);
+  res.redirect(`${callbackUrl}?code=${authCode}`);
+});
+
+// Exchange one-time auth code for JWT (never expose token in URL)
+export const exchangeOAuthCode = asyncHandler(async (req, res, next) => {
+  const { code } = req.body;
+  if (!code) {
+    return next(new AppError("Authorization code is required", 400));
+  }
+
+  const result = await exchangeAuthCodeForToken(code);
+  if (!result) {
+    return next(new AppError("Invalid or expired authorization code", 401));
+  }
+
+  return res.status(200).json({
+    success: true,
+    token: result.token,
+    user: result.user,
+  });
 });
 
 // 👤 Get Current User

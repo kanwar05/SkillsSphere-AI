@@ -8,14 +8,13 @@ test("partial keyword overlap matches normalized keywords", () => {
     jobDescription: "Looking for React, Node.js, MongoDB, Docker and AWS experience",
   });
 
-  assert.equal(result.weight, 0.2);
   // React, Node.js, MongoDB match -> 3/5 = 60
   assert.equal(result.score, 60);
-  assert.ok(result.matchedKeywords.includes("react"));
-  assert.ok(result.matchedKeywords.includes("nodejs"));
-  assert.ok(result.matchedKeywords.includes("mongodb"));
-  assert.ok(result.missingKeywords.includes("docker"));
-  assert.ok(result.missingKeywords.includes("aws"));
+  assert.ok(result.details.matchedKeywords.includes("react"));
+  assert.ok(result.details.matchedKeywords.includes("nodejs"));
+  assert.ok(result.details.matchedKeywords.includes("mongodb"));
+  assert.ok(result.details.missingKeywords.includes("docker"));
+  assert.ok(result.details.missingKeywords.includes("aws"));
 });
 
 test("strong keyword coverage returns high score", () => {
@@ -25,8 +24,8 @@ test("strong keyword coverage returns high score", () => {
   });
 
   assert.equal(result.score, 100);
-  assert.deepEqual(result.missingKeywords, []);
-  assert.ok(result.feedback.some(f => f.includes("Excellent keyword alignment")));
+  assert.deepEqual(result.details.missingKeywords, []);
+  assert.ok(result.details.feedback.some(f => f.includes("Excellent keyword alignment")));
 });
 
 test("low overlap returns low score", () => {
@@ -37,10 +36,10 @@ test("low overlap returns low score", () => {
   });
 
   assert.ok(result.score < 50);
-  assert.ok(result.feedback.some(f => f.includes("missing many key industry keywords")));
-  assert.equal(result.matchedKeywords.length, 0);
+  assert.ok(result.details.feedback.some(f => f.includes("missing many key industry keywords")));
+  assert.equal(result.details.matchedKeywords.length, 0);
   // Kubernetes, Terraform, Docker, AWS, Python are all technical keywords
-  assert.ok(result.missingKeywords.length >= 3); 
+  assert.ok(result.details.missingKeywords.length >= 3); 
 });
 
 test("score is capped at 100", () => {

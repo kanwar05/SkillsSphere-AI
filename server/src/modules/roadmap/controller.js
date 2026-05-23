@@ -34,21 +34,28 @@ export const syncRoadmap = asyncHandler(async (req, res) => {
 
   let progress = await LearningProgress.findOne({ user: req.user._id });
 
-  const roadmapData = topics.map(topic => ({
-    topicName: topic,
-    status: "not_started"
-  }));
+  const roadmapData = topics.map(topic => {
+    const topicName = typeof topic === "string" ? topic : topic.text;
+    const type = typeof topic === "string" ? "learning" : topic.type;
+    return {
+      topicName,
+      type,
+      status: "not_started"
+    };
+  });
 
   if (progress) {
     // If roadmap exists, we merge (don't overwrite completed topics)
     const existingTopics = new Map(progress.roadmap.map(t => [t.topicName, t]));
     
     progress.targetRole = targetRole;
-    progress.roadmap = topics.map(topicName => {
+    progress.roadmap = topics.map(topic => {
+      const topicName = typeof topic === "string" ? topic : topic.text;
+      const type = typeof topic === "string" ? "learning" : topic.type;
       if (existingTopics.has(topicName)) {
         return existingTopics.get(topicName);
       }
-      return { topicName, status: "not_started" };
+      return { topicName, type, status: "not_started" };
     });
   } else {
     progress = new LearningProgress({
@@ -228,5 +235,83 @@ export const verifyTopic = asyncHandler(async (req, res) => {
     success: true,
     message: isVerified ? "Milestone verified by tutor" : "Milestone verification removed",
     data: progress
+  });
+});
+
+/**
+ * Add a custom milestone to a student's roadmap (Tutors only)
+ */
+export const addTutorMilestone = asyncHandler(async (req, res) => {
+  const { studentId, topicName } = req.body;
+
+  if (!studentId || !topicName) {
+    throw new AppError("studentId and topicName are required", 400);
+  }
+
+  const progress = await LearningProgress.findOne({ user: studentId });
+  if (!progress) {
+    throw new AppError("Roadmap not found for this student", 404);
+  }
+
+  // Check for duplicates
+  const isDuplicate = progress.roadmap.some(
+    (t) => t.topicName.trim().toLowerCase() === topicName.trim().toLowerCase()
+  );
+  if (isDuplicate) {
+    throw new AppError("This milestone already exists in the roadmap", 400);
+  }
+
+  progress.roadmap.push({
+    topicName: topicName.trim(),
+    status: "not_started",
+    addedByTutor: true
+  });
+
+  await progress.save();
+
+  res.status(201).json({
+    success: true,
+    message: "Custom milestone added successfully by tutor",
+    data: progress
+  });
+});
+
+/**
+ * Opt-in for a recruiter to track the roadmap (Student only)
+ */
+export const optInRecruiterTracking = asyncHandler(async (req, res) => {
+  const { recruiterId } = req.body;
+  if (!recruiterId) {
+    throw new AppError("recruiterId is required", 400);
+  }
+
+  const progress = await LearningProgress.findOne({ user: req.user._id });
+  if (!progress) {
+    throw new AppError("No active roadmap found", 404);
+  }
+
+  if (!progress.recruitersTracking.includes(recruiterId)) {
+    progress.recruitersTracking.push(recruiterId);
+    await progress.save();
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Successfully opted in for recruiter tracking",
+    data: progress
+  });
+});
+
+/**
+ * Get all roadmaps tracked by the current recruiter (Recruiter only)
+ */
+export const getTrackedRoadmaps = asyncHandler(async (req, res) => {
+  const roadmaps = await LearningProgress.find({ recruitersTracking: req.user._id })
+    .populate("user", "name email role")
+    .lean();
+
+  res.status(200).json({
+    success: true,
+    data: roadmaps
   });
 });

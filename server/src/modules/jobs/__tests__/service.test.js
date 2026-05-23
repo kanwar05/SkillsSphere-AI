@@ -189,4 +189,79 @@ describe("Job Service", () => {
       assert.equal(result.jobs[0].relevanceInsights, "Great match");
     });
   });
+
+  describe("getJobApplications", () => {
+    const mockJobId = "job123";
+    const mockRecruiterId = "recruiter123";
+
+    it("should return all applications for the job when no status filter is provided", async () => {
+      const mockJob = { _id: mockJobId, recruiter: { toString: () => mockRecruiterId } };
+      const mockApps = [{ _id: "app1", job: mockJobId, status: "pending" }];
+
+      mock.method(JobPosting, "findById", async () => mockJob);
+
+      const mockQuery = {
+        populate: mock.fn(() => mockQuery),
+        sort: mock.fn(async () => mockApps),
+      };
+      mock.method(JobApplication, "find", () => mockQuery);
+
+      const result = await jobService.getJobApplications(mockJobId, mockRecruiterId);
+
+      assert.equal(JobPosting.findById.mock.calls.length, 1);
+      assert.equal(JobPosting.findById.mock.calls[0].arguments[0], mockJobId);
+      assert.equal(JobApplication.find.mock.calls.length, 1);
+      assert.deepEqual(JobApplication.find.mock.calls[0].arguments[0], { job: mockJobId });
+      assert.deepEqual(result, mockApps);
+    });
+
+    it("should filter applications by status when status filter is provided", async () => {
+      const mockJob = { _id: mockJobId, recruiter: { toString: () => mockRecruiterId } };
+      const mockApps = [{ _id: "app1", job: mockJobId, status: "shortlisted" }];
+
+      mock.method(JobPosting, "findById", async () => mockJob);
+
+      const mockQuery = {
+        populate: mock.fn(() => mockQuery),
+        sort: mock.fn(async () => mockApps),
+      };
+      mock.method(JobApplication, "find", () => mockQuery);
+
+      const result = await jobService.getJobApplications(mockJobId, mockRecruiterId, "shortlisted");
+
+      assert.equal(JobPosting.findById.mock.calls.length, 1);
+      assert.equal(JobApplication.find.mock.calls.length, 1);
+      assert.deepEqual(JobApplication.find.mock.calls[0].arguments[0], { job: mockJobId, status: "shortlisted" });
+      assert.deepEqual(result, mockApps);
+    });
+
+    it("should throw AppError(404) if job not found", async () => {
+      mock.method(JobPosting, "findById", async () => null);
+
+      await assert.rejects(
+        () => jobService.getJobApplications("invalidId", mockRecruiterId),
+        (err) => {
+          assert.ok(err instanceof AppError);
+          assert.equal(err.statusCode, 404);
+          assert.equal(err.message, "Job not found");
+          return true;
+        }
+      );
+    });
+
+    it("should throw AppError(403) if recruiter is not the job owner", async () => {
+      const mockJob = { _id: mockJobId, recruiter: { toString: () => "otherRecruiter" } };
+      mock.method(JobPosting, "findById", async () => mockJob);
+
+      await assert.rejects(
+        () => jobService.getJobApplications(mockJobId, mockRecruiterId),
+        (err) => {
+          assert.ok(err instanceof AppError);
+          assert.equal(err.statusCode, 403);
+          assert.equal(err.message, "You do not have permission to view these applications");
+          return true;
+        }
+      );
+    });
+  });
 });

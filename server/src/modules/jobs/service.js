@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
 import JobPosting from "../../database/models/JobPosting.js";
 import JobApplication from "../../database/models/JobApplication.js";
+import Notification from "../../database/models/Notification.js";
 import * as resumeService from "../resumes/service.js";
 import matchingService from "../matching/service.js";
 import { generateRecommendations } from "../../../../ai-ml/pipeline/recommendationEngine.js";
 import AppError from "../../utils/AppError.js";
 import { getIO } from "../../utils/socketIO.js";
+import recruiterIntelligenceService from "../recruiterIntelligence/service.js";
 
 /**
  * Create a new job posting
@@ -77,7 +79,7 @@ export const getAllJobs = async (queryParams = {}) => {
 
   const [jobs, totalCount] = await Promise.all([
     JobPosting.find(filters)
-      .populate("recruiter", "name email company")
+      .populate("recruiter", "name email company companyWebsite")
       .sort("-createdAt")
       .skip(skip)
       .limit(limit),
@@ -98,7 +100,7 @@ export const getAllJobs = async (queryParams = {}) => {
  * @returns {Promise<Object>} - Job details
  */
 export const getJobById = async (id) => {
-  const job = await JobPosting.findById(id).populate("recruiter", "name email company");
+  const job = await JobPosting.findById(id).populate("recruiter", "name email company companyWebsite");
 
   if (!job) {
     throw new AppError("Job not found", 404);
@@ -387,18 +389,59 @@ export const applyToJob = async (jobId, applicantId, options = {}) => {
       existing.coverNote = options.coverNote?.trim() || "";
       existing.statusHistory.push({ status: "pending", comment: "Application re-submitted after withdrawal" });
       await existing.save();
+
+      // Re-evaluate candidate match asynchronously
+      recruiterIntelligenceService.evaluateCandidateMatch(existing._id).catch(err => {
+        console.error("Failed to evaluate candidate match on re-apply:", err);
+      });
+
       return existing;
     }
     throw new AppError("You have already applied to this job", 409);
   }
 
-  const application = await JobApplication.create({
-    job: jobId,
-    applicant: applicantId,
-    resume: options.resumeId || null,
-    resumeLink: options.resumeLink.trim(),
-    coverNote: options.coverNote?.trim() || "",
-    statusHistory: [{ status: "pending", comment: "Application submitted" }],
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  let application;
+  try {
+    const appDocs = await JobApplication.create([{
+      job: jobId,
+      applicant: applicantId,
+      resume: options.resumeId || null,
+      resumeLink: options.resumeLink.trim(),
+      coverNote: options.coverNote?.trim() || "",
+      statusHistory: [{ status: "pending", comment: "Application submitted" }],
+    }], { session });
+    
+    application = appDocs[0];
+
+    const notifDocs = await Notification.create([{
+      recipient: job.recruiter,
+      type: "new_application",
+      title: "New Job Application",
+      message: `A new candidate has applied for ${job.title}.`,
+      relatedData: { jobId: job._id, applicationId: application._id, studentId: applicantId }
+    }], { session });
+
+    await session.commitTransaction();
+
+    const io = getIO();
+    if (io) {
+      io.to(`user_${job.recruiter}`).emit("new-notification", notifDocs[0]);
+    }
+
+  } catch (error) {
+    await session.abortTransaction();
+    console.error("Transaction aborted in applyToJob:", error);
+    throw error;
+  } finally {
+    session.endSession();
+  }
+
+  // Evaluate candidate match asynchronously
+  recruiterIntelligenceService.evaluateCandidateMatch(application._id).catch(err => {
+    console.error("Failed to evaluate candidate match:", err);
   });
 
   return application;
@@ -410,7 +453,7 @@ export const applyToJob = async (jobId, applicantId, options = {}) => {
  * @param {string} recruiterId - ID of the recruiter (for ownership check)
  * @returns {Promise<Array>} - List of applications
  */
-export const getJobApplications = async (jobId, recruiterId) => {
+export const getJobApplications = async (jobId, recruiterId, status) => {
   const job = await JobPosting.findById(jobId);
   if (!job) {
     throw new AppError("Job not found", 404);
@@ -420,7 +463,12 @@ export const getJobApplications = async (jobId, recruiterId) => {
     throw new AppError("You do not have permission to view these applications", 403);
   }
 
-  const applications = await JobApplication.find({ job: jobId })
+  const query = { job: jobId };
+  if (status) {
+    query.status = status;
+  }
+
+  const applications = await JobApplication.find(query)
     .populate("applicant", "name email")
     .populate("resume", "fileName")
     .sort({ createdAt: -1 });

@@ -104,6 +104,20 @@ const AnalysisResult = ({ result, file, jobDescription, onReset }) => {
     }
   };
 
+  const handleRegenerate = async (tone, language) => {
+    try {
+      const response = await generateCoverLetter(result.resumeId, jobDescription, tone, language);
+      if (response && response.coverLetter && response.coverLetter.generatedText) {
+        setClText(response.coverLetter.generatedText);
+        return response.coverLetter.generatedText;
+      }
+      throw new Error("Invalid response format from server.");
+    } catch (err) {
+      alert("Failed to regenerate: " + err.message);
+      return null;
+    }
+  };
+
   return (
     <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Top Banner */}
@@ -440,6 +454,7 @@ const AnalysisResult = ({ result, file, jobDescription, onReset }) => {
         isOpen={clModalOpen} 
         onClose={() => setClModalOpen(false)} 
         initialText={clText} 
+        onRegenerate={handleRegenerate}
       />
     </div>
   );

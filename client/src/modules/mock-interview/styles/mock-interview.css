@@ -277,3 +277,32 @@
   .score-breakdown { flex-direction: column; align-items: center; }
   .answer-scores-row { flex-direction: column; }
 }
+
+.socket-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.status-dot.status-connected { background: #10b981; }
+.status-dot.status-disconnected { background: #ef4444; }
+.status-dot.status-reconnecting { background: #f59e0b; }
+.status-dot.status-connecting { background: #94a3b8;}
+.status-text { color: #94a3b8; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

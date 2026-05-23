@@ -13,9 +13,14 @@ const OAuthCallback = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const token = params.get('token');
+    const code = params.get('code');
     const error = params.get('error');
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+    // Purge sensitive params from URL immediately
+    if (window.history.replaceState) {
+      window.history.replaceState(null, '', '/auth/callback');
+    }
 
     if (error) {
       showError(decodeURIComponent(error));
@@ -23,30 +28,30 @@ const OAuthCallback = () => {
       return;
     }
 
-    if (!token) {
-      showError('No authentication token received');
+    if (!code) {
+      showError('No authorization code received');
       navigate('/login', { replace: true });
       return;
     }
 
-    // Store token temporarily and fetch user
-    const fetchUser = async () => {
+    const exchangeCode = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/auth/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        const exchangeRes = await fetch(`${API_URL}/api/auth/exchange-code`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code }),
         });
-        const data = await response.json();
+        const exchangeData = await exchangeRes.json();
 
-        if (data.success && data.user) {
-          // save everything to Redux & storage
-          dispatch(setOAuthData({ token, user: data.user, rememberMe: true }));
-          success(`Welcome ${data.user.name}!`);
-          navigate('/dashboard', { replace: true });
-        } else {
-          throw new Error(data.message || 'Failed to fetch user');
+        if (!exchangeData.success || !exchangeData.token) {
+          throw new Error(exchangeData.message || 'Failed to exchange authorization code');
         }
+
+        const { token, user } = exchangeData;
+
+        dispatch(setOAuthData({ token, user, rememberMe: true }));
+        success(`Welcome ${user.name}!`);
+        navigate('/dashboard', { replace: true });
       } catch (err) {
         console.error(err);
         showError('Could not complete login. Please try again.');
@@ -56,7 +61,7 @@ const OAuthCallback = () => {
       }
     };
 
-    fetchUser();
+    exchangeCode();
   }, [dispatch, navigate, location, showError, success]);
 
   return (

@@ -16,6 +16,7 @@ const npm = npmCommand();
 
 const clientDir = path.join(repoRoot, "client");
 const serverDir = path.join(repoRoot, "server");
+const aimlDir = path.join(repoRoot, "ai-ml");
 
 async function main() {
   printHeader("Root: installing dependencies");
@@ -29,6 +30,11 @@ async function main() {
   if (fs.existsSync(serverDir)) {
     printHeader("Server: installing dependencies");
     await run(npm, ["install"], { cwd: serverDir, label: "server" });
+  }
+
+  if (fs.existsSync(aimlDir)) {
+    printHeader("AI-ML: installing dependencies");
+    await run(npm, ["install"], { cwd: aimlDir, label: "ai-ml" });
   }
 
   printHeader("Python: installing dependencies");

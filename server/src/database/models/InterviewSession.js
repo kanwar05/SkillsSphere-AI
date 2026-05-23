@@ -77,6 +77,19 @@ const interviewSessionSchema = new mongoose.Schema(
       index: true,
     },
 
+    conductorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    observers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      }
+    ],
+
     topic: {
       type: String,
       required: [true, "Interview topic is required"],

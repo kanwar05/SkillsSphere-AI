@@ -72,7 +72,17 @@ SkillSphere AI aims to simplify the path from learning to hiring by giving users
 6. **Skill Tracking Dashboard**  
    Performance insights and "Next Learning Milestone" guidance to help students track growth.
 
-6. **Secure Authentication & Email Verification**  
+7. **AI Cover Letter Intelligence System**  
+   AI-powered career application workflow extending the Resume Intelligence Engine.
+   - Generates ATS-friendly, role-specific cover letters using parsed resume data and Gemini AI
+   - Dynamic prompt engineering to prevent hallucinations and enforce professional tone
+   - **Tone Personalization**: Professional, Formal, Confident, Concise, Startup-Friendly, Creative
+   - **Multi-language Support**: English, Hindi, German, French, Spanish
+   - Instant regeneration with dynamic tone and language switching
+   - Professional PDF and TXT export with recruiter-ready formatting
+   - Persistent cover letter history dashboard for reusing generated content
+
+8. **Secure Authentication & Email Verification**  
    OTP-based registration and password recovery system.
    - 6-digit email OTP verification
    - Secure Password Reset (Forgot Password) flow
@@ -193,6 +203,8 @@ SkillSphere-AI/
 - `POST /api/resume/analyze` (v2: uses latest-only upsert flow)
 - `GET /api/resume/me/latest`: fetch user's latest parsed resume (no raw resumeText)
 - `GET /api/resume/result/:id`
+- `POST /api/resume/:id/cover-letter`: Generate an AI cover letter
+- `GET /api/cover-letters`: Fetch user's cover letter history
 - `GET /api/roadmap/me`: fetch user's learning roadmap and progress
 - `POST /api/roadmap/sync`: sync roadmap with latest analysis suggestions
 - `PATCH /api/roadmap/update-topic`: update status of a specific roadmap milestone
@@ -320,6 +332,7 @@ cp .env.example .env
 - `JWT_SECRET`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
+- `GEMINI_API_KEY` (Required for AI Cover Letter Generation)
 
 ```env
 # AI/ML Configuration (Required for semantic matching — free tier)

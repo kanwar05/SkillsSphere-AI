@@ -100,6 +100,11 @@ jobs:
   server_checks:
     name: Server Checks
     runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
 
     steps:
       - name: Checkout repository
@@ -133,6 +138,9 @@ jobs:
       - name: Run tests
         if: steps.server_check.outputs.exists == 'true'
         working-directory: server
+        env:
+          MONGO_URI: mongodb://localhost:27017/test_db
+          JWT_SECRET: ci_test_secret
         run: npm test --if-present
 
       - name: Run build

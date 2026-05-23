@@ -11,6 +11,7 @@ import {
   Loader2 
 } from "lucide-react";
 import CoverLetterModal from "../../../shared/components/CoverLetterModal";
+import { generateCoverLetter } from "../../resume-analyzer/services/resumeService";
 
 const CoverLetterHistoryPage = () => {
   const [history, setHistory] = useState([]);
@@ -18,32 +19,49 @@ const CoverLetterHistoryPage = () => {
   const [error, setError] = useState(null);
   
   // Modal state
-  const [selectedClText, setSelectedClText] = useState("");
+  const [selectedCl, setSelectedCl] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const response = await getCoverLetterHistory();
-        if (response.success) {
-          setHistory(response.data || []);
-        } else {
-          setError("Failed to load cover letter history.");
-        }
-      } catch (err) {
-        console.error(err);
-        setError("An error occurred while fetching history.");
-      } finally {
-        setLoading(false);
+  const fetchHistory = async () => {
+    try {
+      const response = await getCoverLetterHistory();
+      if (response.success) {
+        setHistory(response.data || []);
+      } else {
+        setError("Failed to load cover letter history.");
       }
-    };
+    } catch (err) {
+      console.error(err);
+      setError("An error occurred while fetching history.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchHistory();
   }, []);
 
-  const openModal = (text) => {
-    setSelectedClText(text);
+  const openModal = (cl) => {
+    setSelectedCl(cl);
     setIsModalOpen(true);
+  };
+
+  const handleRegenerate = async (tone, language) => {
+    if (!selectedCl) return null;
+    try {
+      const resumeId = typeof selectedCl.resume === 'object' ? selectedCl.resume._id : selectedCl.resume;
+      const response = await generateCoverLetter(resumeId, selectedCl.jobDescription, tone, language);
+      if (response && response.coverLetter && response.coverLetter.generatedText) {
+        // Refresh history to show the newly generated version
+        fetchHistory();
+        return response.coverLetter.generatedText;
+      }
+      throw new Error("Invalid response format from server.");
+    } catch (err) {
+      alert("Failed to regenerate: " + err.message);
+      return null;
+    }
   };
 
   const getJobPreview = (jd) => {
@@ -130,7 +148,7 @@ const CoverLetterHistoryPage = () => {
                 </div>
                 
                 <button
-                  onClick={() => openModal(cl.generatedText)}
+                  onClick={() => openModal(cl)}
                   className="w-full sm:w-auto px-6 py-2.5 bg-gray-100 dark:bg-white/5 hover:bg-blue-50 dark:hover:bg-blue-500/10 text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-bold rounded-xl border border-gray-200 dark:border-white/5 hover:border-blue-500/20 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
                 >
                   View & Reuse
@@ -145,7 +163,8 @@ const CoverLetterHistoryPage = () => {
       <CoverLetterModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        initialText={selectedClText}
+        initialText={selectedCl ? selectedCl.generatedText : ""}
+        onRegenerate={handleRegenerate}
       />
     </div>
   );

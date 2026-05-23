@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import Navbar from "../../../shared/landing/Navbar";
 import { 
-  getStudentsRoadmaps, getStudentRoadmap, assignTutorResource, verifyTopic 
+  getStudentsRoadmaps, getStudentRoadmap, assignTutorResource, verifyTopic, addTutorMilestone 
 } from "../services/roadmapService";
 import { LoadingState, useToast } from "../../../shared/components";
 
@@ -24,6 +24,10 @@ export default function TutorRoadmapLobby() {
   const [resourceType, setResourceType] = useState("video");
   const [resourceUrL, setResourceUrL] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Add Milestone Form State
+  const [showAddMilestone, setShowAddMilestone] = useState(false);
+  const [newTopicName, setNewTopicName] = useState("");
 
   const fetchStudents = async () => {
     try {
@@ -100,6 +104,26 @@ export default function TutorRoadmapLobby() {
     } catch (err) {
       console.error("Failed to assign resource:", err);
       showError(err.message || "Failed to assign learning resource. Please verify input data.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleAddMilestone = async (e) => {
+    e.preventDefault();
+    if (!newTopicName.trim() || !selectedStudent) return;
+    setActionLoading(true);
+    try {
+      const response = await addTutorMilestone(selectedStudent.user._id, newTopicName);
+      if (response.success) {
+        setStudentDetails(response.data);
+        setNewTopicName("");
+        setShowAddMilestone(false);
+        showSuccess("Custom milestone added successfully!");
+      }
+    } catch (err) {
+      console.error("Failed to add milestone:", err);
+      showError(err.message || "Failed to add milestone.");
     } finally {
       setActionLoading(false);
     }
@@ -232,9 +256,40 @@ export default function TutorRoadmapLobby() {
                     </div>
 
                     {/* Milestones / Topics List */}
-                    <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                      <Target className="w-5 h-5 text-indigo-400" /> Roadmap Milestones
-                    </h3>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                        <Target className="w-5 h-5 text-indigo-400" /> Roadmap Milestones
+                      </h3>
+                      <button 
+                        onClick={() => setShowAddMilestone(!showAddMilestone)}
+                        className="text-xs font-bold text-indigo-400 flex items-center gap-1 hover:text-indigo-300 transition-colors"
+                      >
+                        <Plus className="w-4 h-4" /> Add Custom Milestone
+                      </button>
+                    </div>
+
+                    {showAddMilestone && (
+                      <form onSubmit={handleAddMilestone} className="mb-6 p-4 bg-indigo-900/20 border border-indigo-500/30 rounded-xl flex flex-col md:flex-row gap-3 items-end animate-fade-in">
+                        <div className="flex-1 w-full">
+                          <label className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-1 block">Milestone Topic Name</label>
+                          <input 
+                            type="text" 
+                            value={newTopicName}
+                            onChange={e => setNewTopicName(e.target.value)}
+                            placeholder="e.g. Advanced System Design"
+                            className="w-full bg-slate-900 border border-indigo-500/30 rounded-lg p-2.5 text-sm focus:outline-none focus:border-indigo-500 text-white"
+                            required
+                          />
+                        </div>
+                        <button 
+                          type="submit" 
+                          disabled={actionLoading}
+                          className="w-full md:w-auto px-4 py-2.5 bg-indigo-600 rounded-lg text-sm font-bold text-white hover:bg-indigo-500 transition-colors"
+                        >
+                          {actionLoading ? "Adding..." : "Save Milestone"}
+                        </button>
+                      </form>
+                    )}
 
                     <div className="space-y-6">
                       {studentDetails.roadmap.map((topic, index) => {
@@ -256,6 +311,11 @@ export default function TutorRoadmapLobby() {
                               <div>
                                 <div className="flex items-center gap-2 mb-1.5">
                                   <span className="text-[9px] font-black uppercase text-slate-500">Milestone {index + 1}</span>
+                                  {topic.addedByTutor && (
+                                    <span className="px-1.5 py-0.5 bg-purple-500/10 text-purple-400 rounded text-[8px] font-black uppercase tracking-tighter border border-purple-500/20">
+                                      Tutor Added
+                                    </span>
+                                  )}
                                   {isVerified && (
                                     <span className="px-1.5 py-0.5 bg-indigo-500/10 text-indigo-400 rounded text-[8px] font-black uppercase tracking-tighter border border-indigo-500/20 flex items-center gap-0.5">
                                       <Award className="w-2.5 h-2.5" /> Verified

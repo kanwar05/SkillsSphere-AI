@@ -268,18 +268,18 @@ export default function ClassroomRoom() {
   };
 
   return (
-    <div className="h-screen bg-[#020617] text-white flex flex-col pt-16">
+    <div className="h-screen bg-white dark:bg-[#020617] text-gray-900 dark:text-white flex flex-col pt-16">
       <div className="flex-1 flex overflow-hidden">
         {/* Main Video Area */}
         <div className="flex-1 p-4 flex flex-col min-h-0">
           {/* Workspace Switcher Bar */}
-          <div className="flex items-center space-x-2 mb-4 bg-slate-900/60 p-1 border border-slate-800 rounded-xl max-w-fit">
+          <div className="flex items-center space-x-2 mb-4 bg-gray-100 dark:bg-slate-900/60 p-1 border border-gray-200 dark:border-slate-800 rounded-xl max-w-fit">
             <button
               onClick={() => setActiveWorkspace("video")}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
                 activeWorkspace === "video"
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10"
-                  : "text-slate-400 hover:text-white"
+                  : "text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
               <Video size={14} />
@@ -290,7 +290,7 @@ export default function ClassroomRoom() {
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
                 activeWorkspace === "whiteboard"
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10"
-                  : "text-slate-400 hover:text-white"
+                  : "text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
               <Palette size={14} />
@@ -301,7 +301,7 @@ export default function ClassroomRoom() {
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
                 activeWorkspace === "code"
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10"
-                  : "text-slate-400 hover:text-white"
+                  : "text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
               <Code2 size={14} />
@@ -337,7 +337,7 @@ export default function ClassroomRoom() {
             )}
 
             {/* Main workspace container */}
-            <div className="flex-1 bg-slate-900 rounded-2xl overflow-y-auto p-4 border border-slate-800 flex flex-col min-h-0">
+            <div className="flex-1 bg-gray-50 dark:bg-slate-900 rounded-2xl overflow-y-auto p-4 border border-gray-200 dark:border-slate-800 flex flex-col min-h-0">
               {activeWorkspace === "video" && (
                 /* Grid Layout for Videos */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -372,14 +372,14 @@ export default function ClassroomRoom() {
           </div>
 
           {/* Controls Bar */}
-          <div className="mt-4 bg-slate-800/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-4 flex items-center justify-center space-x-4">
-            <button onClick={toggleMute} className={`p-4 rounded-xl transition-all ${isMuted ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-slate-700 hover:bg-slate-600'}`}>
+          <div className="mt-4 bg-white/90 dark:bg-slate-800/80 backdrop-blur-md border border-gray-200 dark:border-slate-700/50 rounded-2xl p-4 flex items-center justify-center space-x-4">
+            <button onClick={toggleMute} className={`p-4 rounded-xl transition-all ${isMuted ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600'}`}>
               {isMuted ? <MicOff size={24} /> : <Mic size={24} />}
             </button>
-            <button onClick={toggleVideo} className={`p-4 rounded-xl transition-all ${isVideoOff ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-slate-700 hover:bg-slate-600'}`}>
+            <button onClick={toggleVideo} className={`p-4 rounded-xl transition-all ${isVideoOff ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600'}`}>
               {isVideoOff ? <VideoOff size={24} /> : <Video size={24} />}
             </button>
-            <button onClick={toggleHandRaise} className={`p-4 rounded-xl transition-all ${isHandRaised ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30' : 'bg-slate-700 hover:bg-slate-600'}`}>
+            <button onClick={toggleHandRaise} className={`p-4 rounded-xl transition-all ${isHandRaised ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30' : 'bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600'}`}>
               <Hand size={24} />
             </button>
             <button onClick={handleLeave} className="p-4 rounded-xl bg-red-600 hover:bg-red-700 transition-all text-white px-8 font-semibold flex items-center space-x-2">
@@ -390,17 +390,17 @@ export default function ClassroomRoom() {
         </div>
 
         {/* Sidebar */}
-        <div className="w-80 border-l border-slate-800 bg-slate-900/50 flex flex-col">
-          <div className="flex border-b border-slate-800">
+        <div className="w-80 border-l border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 flex flex-col">
+          <div className="flex border-b border-gray-200 dark:border-slate-800">
             <button 
-              className={`flex-1 py-4 text-sm font-medium flex items-center justify-center space-x-2 transition-colors ${activeTab === 'chat' ? 'border-b-2 border-indigo-500 text-indigo-400' : 'text-slate-400 hover:text-white'}`}
+              className={`flex-1 py-4 text-sm font-medium flex items-center justify-center space-x-2 transition-colors ${activeTab === 'chat' ? 'border-b-2 border-indigo-500 text-indigo-400' : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'}`}
               onClick={() => setActiveTab('chat')}
             >
               <MessageSquare size={16} />
               <span>Chat</span>
             </button>
             <button 
-              className={`flex-1 py-4 text-sm font-medium flex items-center justify-center space-x-2 transition-colors ${activeTab === 'participants' ? 'border-b-2 border-indigo-500 text-indigo-400' : 'text-slate-400 hover:text-white'}`}
+              className={`flex-1 py-4 text-sm font-medium flex items-center justify-center space-x-2 transition-colors ${activeTab === 'participants' ? 'border-b-2 border-indigo-500 text-indigo-400' : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'}`}
               onClick={() => setActiveTab('participants')}
             >
               <Users size={16} />
@@ -413,15 +413,15 @@ export default function ClassroomRoom() {
               <>
                 <div className="flex-1 space-y-4 mb-4">
                   {chatMessages.length === 0 && (
-                    <div className="text-center text-slate-500 mt-10">No messages yet.</div>
+                    <div className="text-center text-gray-500 dark:text-slate-500 mt-10">No messages yet.</div>
                   )}
                   {chatMessages.map((msg, i) => (
-                    <div key={i} className="bg-slate-800 rounded-lg p-3">
+                    <div key={i} className="bg-white dark:bg-slate-800 rounded-lg p-3">
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-semibold text-sm text-indigo-400">{msg.sender.name}</span>
-                        <span className="text-xs text-slate-500">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span className="text-xs text-gray-500 dark:text-slate-500">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
-                      <p className="text-slate-300 text-sm">{msg.message}</p>
+                      <p className="text-gray-700 dark:text-slate-300 text-sm">{msg.message}</p>
                     </div>
                   ))}
                 </div>
@@ -431,7 +431,7 @@ export default function ClassroomRoom() {
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     placeholder="Type a message..."
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-indigo-500"
                   />
                   <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-indigo-400 hover:text-indigo-300 transition-colors">
                     <Send size={18} />
@@ -440,7 +440,7 @@ export default function ClassroomRoom() {
               </>
             ) : (
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-slate-800 rounded-xl border border-slate-700">
+                <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center font-semibold text-sm">
                       {user?.name?.charAt(0) || "U"}
@@ -450,7 +450,7 @@ export default function ClassroomRoom() {
                   {isHandRaised && <Hand size={16} className="text-yellow-400" />}
                 </div>
                 {peers.map((peerObj, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-slate-800 rounded-xl border border-slate-700">
+                  <div key={i} className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center font-semibold text-sm">
                         {peerObj.user?.name?.charAt(0) || "U"}

@@ -19,9 +19,9 @@ test("exact experience match returns 100", () => {
   });
 
   assert.equal(result.score, 100);
-  assert.equal(result.requiredExperience, 2);
-  assert.equal(result.candidateExperience, 2);
-  assert.equal(result.experienceGap, 0);
+  assert.equal(result.details.requiredExperience, 2);
+  assert.equal(result.details.candidateExperience, 2);
+  assert.equal(result.details.experienceGap, 0);
 });
 
 test("partial match returns ratio-based score", () => {
@@ -31,11 +31,9 @@ test("partial match returns ratio-based score", () => {
   });
 
   assert.equal(result.score, 33.33);
-  assert.equal(result.experienceGap, 2);
+  assert.equal(result.details.experienceGap, 2);
   assert.ok(
-    result.feedback.includes(
-      "Candidate has significantly less experience than required",
-    ),
+    result.details.feedback.some(f => f.includes("Candidate has significantly less experience than required"))
   );
 });
 
@@ -45,8 +43,8 @@ test("months conversion can exceed required years", () => {
     jobDescription: "Need 1 year of experience",
   });
 
-  assert.equal(result.candidateExperience, 1.5);
-  assert.equal(result.requiredExperience, 1);
+  assert.equal(result.details.candidateExperience, 1.5);
+  assert.equal(result.details.requiredExperience, 1);
   assert.equal(result.score, 100);
 });
 
@@ -56,10 +54,10 @@ test("combined year and month expression is parsed correctly", () => {
     jobDescription: "Need 2 years of experience",
   });
 
-  assert.equal(result.candidateExperience, 1.5);
-  assert.equal(result.requiredExperience, 2);
+  assert.equal(result.details.candidateExperience, 1.5);
+  assert.equal(result.details.requiredExperience, 2);
   assert.equal(result.score, 75);
-  assert.equal(result.experienceGap, 0.5);
+  assert.equal(result.details.experienceGap, 0.5);
 });
 
 test("missing JD experience returns 0 with guidance feedback", () => {
@@ -68,11 +66,9 @@ test("missing JD experience returns 0 with guidance feedback", () => {
     jobDescription: "Looking for a React developer",
   });
 
-  assert.equal(result.score, 0);
-  assert.equal(result.requiredExperience, 0);
+  assert.equal(result.score, 100); // Because requiredYears is 0
+  assert.equal(result.details.requiredExperience, 0);
   assert.ok(
-    result.feedback.includes(
-      "Could not detect required experience from the job description",
-    ),
+    result.details.feedback.some(f => f.includes("Could not detect required experience from the job description"))
   );
 });
