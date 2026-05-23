@@ -118,6 +118,24 @@ export function initClassroomSockets(io) {
 
     // WebRTC Signaling Events
     socket.on("webrtc-offer", ({ targetSocketId, offer }) => {
+      // Validate that both sockets exist and are in the same room
+      if (!socket.data || !socket.data.roomId) {
+        socket.emit("unauthorized", { message: "You must join a room first" });
+        return;
+      }
+
+      const targetSocket = io.sockets.sockets.get(targetSocketId);
+      if (
+        !targetSocket ||
+        !targetSocket.data ||
+        targetSocket.data.roomId !== socket.data.roomId
+      ) {
+        socket.emit("unauthorized", {
+          message: "Target user is not in your classroom",
+        });
+        return;
+      }
+
       socket.to(targetSocketId).emit("webrtc-offer", {
         callerSocketId: socket.id,
         callerUser: socket.data ? socket.data.user : socket.user,
