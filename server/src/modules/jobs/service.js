@@ -35,8 +35,9 @@ export const getAllJobs = async (queryParams = {}) => {
   const filters = { status: "open" };
 
   // Filter by designation (case-insensitive regex search on title)
-  if (designation) {
-    filters.title = { $regex: designation, $options: "i" };
+  if (designation && typeof designation === "string") {
+    const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    filters.title = { $regex: escapeRegex(designation), $options: "i" };
   }
 
   // Filter by Salary Range
