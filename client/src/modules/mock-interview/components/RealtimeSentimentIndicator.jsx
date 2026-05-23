@@ -1,6 +1,5 @@
 import React from 'react';
 import { Activity, Brain, AlertCircle } from 'lucide-react';
-import '../styles/mock-interview.css'; // Make sure styles are updated here
 
 const RealtimeSentimentIndicator = ({ analysis }) => {
   if (!analysis) return null;
@@ -26,24 +25,24 @@ const RealtimeSentimentIndicator = ({ analysis }) => {
   };
 
   return (
-    <div className="realtime-sentiment-panel">
-      <div className="rs-header">
-        <Activity size={16} className="rs-icon animate-pulse" />
+    <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 mb-6 dark:bg-gray-900/70">
+      <div className="flex items-center gap-2 text-indigo-300 font-semibold mb-4 text-sm uppercase tracking-wider">
+        <Activity size={16} className="animate-pulse" />
         <span>Live Analysis</span>
       </div>
 
-      <div className="rs-metrics-grid">
-        <div className="rs-metric-card">
-          <div className="rs-metric-header">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-4">
+        <div className="flex flex-col gap-2 bg-black/20 p-4 rounded-xl border border-white/5">
+          <div className="flex items-center gap-2 text-slate-400 text-xs">
             <Brain size={14} />
             <span>Confidence</span>
           </div>
-          <div className="rs-metric-value" style={{ color: getConfidenceColor(confidence) }}>
+          <div className="text-xl font-bold" style={{ color: getConfidenceColor(confidence) }}>
             {confidence}%
           </div>
-          <div className="rs-progress-bg">
+          <div className="h-1 bg-white/10 rounded-sm overflow-hidden">
             <div 
-              className="rs-progress-fill" 
+              className="h-full rounded-sm" 
               style={{ 
                 width: `${confidence}%`, 
                 backgroundColor: getConfidenceColor(confidence),
@@ -53,17 +52,17 @@ const RealtimeSentimentIndicator = ({ analysis }) => {
           </div>
         </div>
 
-        <div className="rs-metric-card">
-          <div className="rs-metric-header">
+        <div className="flex flex-col gap-2 bg-black/20 p-4 rounded-xl border border-white/5">
+          <div className="flex items-center gap-2 text-slate-400 text-xs">
             <Activity size={14} />
             <span>Tone</span>
           </div>
-          <div className="rs-metric-value" style={{ color: getToneColor(tone) }}>
+          <div className="text-xl font-bold" style={{ color: getToneColor(tone) }}>
             {getToneLabel(tone)}
           </div>
-          <div className="rs-progress-bg">
+          <div className="h-1 bg-white/10 rounded-sm overflow-hidden">
             <div 
-              className="rs-progress-fill" 
+              className="h-full rounded-sm" 
               style={{ 
                 width: `${tone}%`, 
                 backgroundColor: getToneColor(tone),
@@ -73,12 +72,12 @@ const RealtimeSentimentIndicator = ({ analysis }) => {
           </div>
         </div>
         
-        <div className="rs-metric-card">
-          <div className="rs-metric-header">
+        <div className="flex flex-col gap-2 bg-black/20 p-4 rounded-xl border border-white/5">
+          <div className="flex items-center gap-2 text-slate-400 text-xs">
             <AlertCircle size={14} />
             <span>Hesitations</span>
           </div>
-          <div className="rs-metric-value" style={{ color: hesitationCount > 5 ? '#ef4444' : '#94a3b8' }}>
+          <div className="text-xl font-bold" style={{ color: hesitationCount > 5 ? '#ef4444' : '#94a3b8' }}>
             {hesitationCount}
           </div>
         </div>

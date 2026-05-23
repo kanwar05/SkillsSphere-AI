@@ -6,7 +6,6 @@ import Button from "../../../shared/components/Button";
 import Select from "../../../shared/components/Select";
 import { Play, GraduationCap, History, Loader2 } from "lucide-react";
 import { getTopics, startSession } from "../services/interviewService";
-import "../styles/mock-interview.css";
 
 const DIFFICULTY_LEVELS = [
   { value: "easy", label: "Easy" },
@@ -69,34 +68,34 @@ const InterviewLobby = () => {
   }));
 
   return (
-    <div className="interview-lobby-container">
-      <header className="lobby-header">
-        <h1>Adaptive Cognitive Interview</h1>
-        <p className="lobby-subtitle">
+    <div className="max-w-[1200px] mx-auto p-8 min-h-[calc(100vh-80px)] flex flex-col gap-8">
+      <header className="text-center mb-4">
+        <h1 className="text-4xl font-extrabold bg-gradient-to-br from-indigo-500 to-purple-500 bg-clip-text text-transparent mb-2">Adaptive Cognitive Interview</h1>
+        <p className="text-slate-400 max-w-2xl mx-auto">
           Prepare for your dream role with our concept-aware AI interviewer. 
           The session will adapt to your performance in real-time.
         </p>
       </header>
 
       {error && (
-        <div className="lobby-error">
+        <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-center">
           {error}
         </div>
       )}
 
-      <div className="lobby-grid">
-        <div className="lobby-column">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="flex flex-col gap-6">
           <CameraCheck onStreamReady={setIsMediaReady} />
           
-          <div className="setup-card">
-            <h3 className="setup-card-title">
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 flex flex-col gap-6 shadow-xl dark:bg-gray-900/70">
+            <h3 className="text-xl font-bold flex items-center gap-2">
               <GraduationCap className="text-indigo-500" /> Focus Area
             </h3>
-            <div className="focus-area-grid">
-              <div className="field-group">
-                <label className="field-label">Technical Domain</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider">Technical Domain</label>
                 {loading ? (
-                  <div className="loading-placeholder">Loading topics...</div>
+                  <div className="text-slate-400 text-sm py-2">Loading topics...</div>
                 ) : (
                   <Select
                     options={topicOptions}
@@ -105,8 +104,8 @@ const InterviewLobby = () => {
                   />
                 )}
               </div>
-              <div className="field-group">
-                <label className="field-label">Difficulty</label>
+              <div className="flex flex-col gap-1">
+                <label className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider">Difficulty</label>
                 <Select
                   options={DIFFICULTY_LEVELS}
                   value={difficulty}
@@ -114,39 +113,39 @@ const InterviewLobby = () => {
                 />
               </div>
             </div>
-            <p className="field-label" style={{ marginTop: "0.5rem", fontWeight: 500, textTransform: "none", letterSpacing: "normal" }}>
+            <p className="text-[0.7rem] font-medium text-slate-400 mt-2">
               Each session picks 5 random questions from the selected difficulty.
             </p>
           </div>
         </div>
 
-        <div className="lobby-column">
+        <div className="flex flex-col gap-6">
           <PersonaSelector 
             selectedPersona={selectedPersona} 
             onSelect={setSelectedPersona} 
           />
 
-          <div className="start-section">
+          <div className="flex flex-col items-center gap-4 mt-4">
             <Button
               variant="primary"
               size="lg"
-              className="start-button"
+              className="w-full max-w-sm py-4 text-lg font-bold rounded-full flex items-center justify-center gap-3"
               disabled={starting || loading}
               onClick={handleStartInterview}
             >
               {starting ? (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Loader2 className="spin-icon" /> Preparing Session...
+                <span className="flex items-center gap-2">
+                  <Loader2 className="animate-spin" /> Preparing Session...
                 </span>
               ) : (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span className="flex items-center gap-2">
                   <Play fill="currentColor" /> Start Interview Session
                 </span>
               )}
             </Button>
 
             <button
-              className="history-link"
+              className="bg-transparent border-none text-indigo-400 hover:text-indigo-300 hover:underline cursor-pointer flex items-center gap-2 text-sm"
               onClick={() => navigate("/mock-interview/history")}
             >
               <History size={16} /> View Interview History
@@ -154,7 +153,7 @@ const InterviewLobby = () => {
           </div>
           
           {!isMediaReady && (
-            <p className="media-warning">
+            <p className="text-center text-sm text-amber-500 font-medium">
               Please enable Camera & Microphone to proceed
             </p>
           )}

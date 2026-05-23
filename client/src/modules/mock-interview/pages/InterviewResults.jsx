@@ -17,7 +17,6 @@ import {
   Loader2,
   ArrowLeft,
 } from "lucide-react";
-import "../styles/mock-interview.css";
 
 const InterviewResults = () => {
   const { id: sessionId } = useParams();
@@ -54,7 +53,7 @@ const InterviewResults = () => {
 
   if (loading) {
     return (
-      <div className="results-container">
+      <div className="max-w-[900px] mx-auto p-8 flex flex-col gap-6">
         <InterviewResultsSkeleton />
       </div>
     );
@@ -62,12 +61,12 @@ const InterviewResults = () => {
 
   if (error || !results) {
     return (
-      <div className="results-container">
-        <div className="session-error-state">
+      <div className="max-w-[900px] mx-auto p-8 flex flex-col gap-6">
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 text-slate-400">
           <AlertTriangle size={48} />
           <p>{error || "No results found."}</p>
           <button
-            className="btn-back"
+            className="bg-indigo-500/15 text-indigo-300 border-none py-3 px-6 rounded-xl font-semibold cursor-pointer"
             onClick={() => navigate("/mock-interview")}
           >
             Back to Lobby
@@ -127,19 +126,19 @@ const InterviewResults = () => {
   ];
 
   return (
-    <div className="results-container">
+    <div className="max-w-[900px] mx-auto p-8 flex flex-col gap-6">
       {/* Header */}
-      <div className="results-header">
-        <h1>Interview Results</h1>
-        <div className="results-meta">
-          <span className="results-badge badge-topic">
+      <div className="text-center">
+        <h1 className="text-3xl font-extrabold bg-gradient-to-br from-indigo-500 to-purple-500 bg-clip-text text-transparent">Interview Results</h1>
+        <div className="flex justify-center gap-4 mt-2 flex-wrap">
+          <span className="py-1 px-3 rounded-full text-xs font-semibold bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
             {results.topic?.toUpperCase()}
           </span>
-          <span className="results-badge badge-difficulty">
+          <span className="py-1 px-3 rounded-full text-xs font-semibold bg-indigo-500/15 text-indigo-300 capitalize">
             {results.difficulty}
           </span>
           {results.duration && (
-            <span className="results-badge badge-duration">
+            <span className="py-1 px-3 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400">
               <Clock size={12} style={{ display: "inline", marginRight: 4 }} />
               {results.duration}s
             </span>
@@ -148,9 +147,9 @@ const InterviewResults = () => {
       </div>
 
       {/* Overall Score Ring */}
-      <div className="overall-score-card">
-        <div className="overall-ring">
-          <svg width="140" height="140">
+      <div className="bg-white/5 border border-white/10 rounded-3xl p-10 text-center dark:bg-gray-900/70">
+        <div className="w-[140px] h-[140px] mx-auto mb-6 relative">
+          <svg width="140" height="140" className="-rotate-90">
             <circle
               cx="70"
               cy="70"
@@ -172,36 +171,36 @@ const InterviewResults = () => {
               style={{ transition: "stroke-dashoffset 1s ease" }}
             />
           </svg>
-          <div className="overall-ring-label">{overallScore}</div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-3xl font-extrabold bg-gradient-to-br from-indigo-500 to-purple-500 bg-clip-text text-transparent">{overallScore}</div>
         </div>
 
-        <div className="score-breakdown">
-          <div className="score-item">
+        <div className="flex justify-center gap-8 mt-4 flex-wrap">
+          <div className="flex flex-col items-center gap-1">
             <Brain size={20} style={{ color: "#818cf8" }} />
-            <span className="score-item-value">{avgTechnical}%</span>
-            <span className="score-item-label">Technical</span>
+            <span className="text-2xl font-bold text-slate-100">{avgTechnical}%</span>
+            <span className="text-xs text-slate-400">Technical</span>
           </div>
-          <div className="score-item">
+          <div className="flex flex-col items-center gap-1">
             <MessageSquare size={20} style={{ color: "#818cf8" }} />
-            <span className="score-item-value">{avgCommunication}%</span>
-            <span className="score-item-label">Communication</span>
+            <span className="text-2xl font-bold text-slate-100">{avgCommunication}%</span>
+            <span className="text-xs text-slate-400">Communication</span>
           </div>
-          <div className="score-item">
+          <div className="flex flex-col items-center gap-1">
             <Target size={20} style={{ color: "#818cf8" }} />
-            <span className="score-item-value">{avgRelevance}%</span>
-            <span className="score-item-label">Relevance</span>
+            <span className="text-2xl font-bold text-slate-100">{avgRelevance}%</span>
+            <span className="text-xs text-slate-400">Relevance</span>
           </div>
         </div>
       </div>
 
       {/* Soft Skills Report */}
-      <div className="soft-skills-card">
-        <h3>
+      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-10 mt-6 dark:bg-gray-900/70">
+        <h3 className="text-xl font-bold text-slate-100 mb-6 text-center">
           <Target size={16} style={{ color: "#10b981", marginRight: 8, display: "inline" }} />
           Soft Skills & Delivery
         </h3>
-        <div className="soft-skills-content">
-          <div className="radar-chart-container" style={{ height: 300, width: '100%' }}>
+        <div className="flex flex-col gap-8 items-center">
+          <div className="w-full max-w-[500px]" style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
                 <PolarGrid stroke="rgba(255,255,255,0.1)" />
@@ -211,18 +210,18 @@ const InterviewResults = () => {
               </RadarChart>
             </ResponsiveContainer>
           </div>
-          <div className="soft-skills-stats">
-            <div className="stat-pill">
-              <span className="stat-label">Avg Confidence</span>
-              <span className="stat-val">{avgConfidence}%</span>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <div className="bg-indigo-500/10 border border-indigo-500/20 py-3 px-6 rounded-2xl flex flex-col items-center gap-1">
+              <span className="text-xs text-slate-400 uppercase tracking-wider">Avg Confidence</span>
+              <span className="text-xl font-bold text-slate-100">{avgConfidence}%</span>
             </div>
-            <div className="stat-pill">
-              <span className="stat-label">Avg Tone Positivity</span>
-              <span className="stat-val">{avgTone}%</span>
+            <div className="bg-indigo-500/10 border border-indigo-500/20 py-3 px-6 rounded-2xl flex flex-col items-center gap-1">
+              <span className="text-xs text-slate-400 uppercase tracking-wider">Avg Tone Positivity</span>
+              <span className="text-xl font-bold text-slate-100">{avgTone}%</span>
             </div>
-            <div className="stat-pill">
-              <span className="stat-label">Total Hesitations</span>
-              <span className="stat-val">{totalHesitations}</span>
+            <div className="bg-indigo-500/10 border border-indigo-500/20 py-3 px-6 rounded-2xl flex flex-col items-center gap-1">
+              <span className="text-xs text-slate-400 uppercase tracking-wider">Total Hesitations</span>
+              <span className="text-xl font-bold text-slate-100">{totalHesitations}</span>
             </div>
           </div>
         </div>
@@ -230,17 +229,17 @@ const InterviewResults = () => {
 
       {/* Weak Concepts */}
       {results.weakConcepts?.length > 0 && (
-        <div className="weak-concepts-card">
-          <h3>
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 dark:bg-gray-900/70">
+          <h3 className="text-base font-bold mb-4 text-slate-100">
             <AlertTriangle
               size={16}
               style={{ color: "#f59e0b", marginRight: 8, display: "inline" }}
             />
             Concepts to Review
           </h3>
-          <div className="concept-badges">
+          <div className="flex flex-wrap gap-2">
             {results.weakConcepts.map((c, i) => (
-              <span key={i} className="concept-badge missed">
+              <span key={i} className="py-1.5 px-3 rounded-full text-xs font-semibold bg-red-500/15 text-red-400">
                 {c}
               </span>
             ))}
@@ -250,13 +249,13 @@ const InterviewResults = () => {
 
       {/* Per-Question Breakdown */}
       {answers.map((a, idx) => (
-        <div key={idx} className="answer-card">
-          <div className="answer-card-header" onClick={() => toggleCard(idx)}>
-            <span className="answer-card-q">
+        <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden dark:bg-gray-900/70">
+          <div className="py-4 px-6 flex justify-between items-center cursor-pointer hover:bg-white/5" onClick={() => toggleCard(idx)}>
+            <span className="font-semibold text-slate-100 flex-1">
               Q{idx + 1}. {a.questionText}
             </span>
             <span
-              className="answer-card-score"
+              className="font-bold text-lg"
               style={{ color: getScoreColor(a.scores?.technical || 0) }}
             >
               {a.scores?.technical || 0}%
@@ -268,31 +267,31 @@ const InterviewResults = () => {
             )}
           </div>
           {expandedCards[idx] && (
-            <div className="answer-card-body">
-              <p>
-                <strong>Your Answer:</strong>{" "}
+            <div className="px-6 pb-6 border-t border-white/5 pt-4">
+              <p className="text-slate-400 leading-relaxed my-4 text-sm">
+                <strong className="text-slate-200">Your Answer:</strong>{" "}
                 {a.transcript || "No answer submitted"}
               </p>
-              <div className="answer-scores-row">
-                <span className="answer-score-pill">
+              <div className="flex gap-4 my-4 flex-wrap">
+                <span className="py-1.5 px-3 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-300">
                   Tech: {a.scores?.technical || 0}%
                 </span>
-                <span className="answer-score-pill">
+                <span className="py-1.5 px-3 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-300">
                   Comm: {a.scores?.communication || 0}%
                 </span>
-                <span className="answer-score-pill">
+                <span className="py-1.5 px-3 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-300">
                   Rel: {a.scores?.relevance || 0}%
                 </span>
               </div>
               {a.concepts && (
-                <div className="concept-badges" style={{ marginTop: "0.5rem" }}>
+                <div className="flex flex-wrap gap-2 mt-2">
                   {a.concepts.detected?.map((c, i) => (
-                    <span key={`d-${i}`} className="concept-badge detected">
+                    <span key={`d-${i}`} className="py-1.5 px-3 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400">
                       ✓ {c}
                     </span>
                   ))}
                   {a.concepts.missed?.map((c, i) => (
-                    <span key={`m-${i}`} className="concept-badge missed">
+                    <span key={`m-${i}`} className="py-1.5 px-3 rounded-full text-xs font-semibold bg-red-500/15 text-red-400">
                       ✗ {c}
                     </span>
                   ))}
@@ -304,15 +303,15 @@ const InterviewResults = () => {
       ))}
 
       {/* Actions */}
-      <div className="results-actions">
+      <div className="flex justify-center gap-4 mt-4 flex-wrap">
         <button
-          className="btn-retake"
+          className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white border-none py-3 px-8 rounded-full font-bold cursor-pointer flex items-center gap-2 hover:opacity-90"
           onClick={() => navigate("/mock-interview")}
         >
           <RefreshCw size={16} /> New Interview
         </button>
         <button
-          className="btn-history"
+          className="bg-white/5 text-indigo-300 border border-indigo-500/30 py-3 px-8 rounded-full font-bold cursor-pointer flex items-center gap-2 hover:bg-indigo-500/10"
           onClick={() => navigate("/mock-interview/history")}
         >
           <ArrowLeft size={16} /> View History

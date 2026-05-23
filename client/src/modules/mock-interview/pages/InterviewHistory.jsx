@@ -10,7 +10,6 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import "../styles/mock-interview.css";
 
 const InterviewHistory = () => {
   const navigate = useNavigate();
@@ -49,9 +48,9 @@ const InterviewHistory = () => {
 
   if (loading) {
     return (
-      <div className="history-container">
-        <div className="session-loading">
-          <Loader2 className="spin-icon" size={48} />
+      <div className="max-w-[900px] mx-auto p-8 flex flex-col gap-6 min-h-[calc(100vh-80px)]">
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 text-slate-400 min-h-[50vh]">
+          <Loader2 className="animate-spin" size={48} />
           <p>Loading history...</p>
         </div>
       </div>
@@ -59,26 +58,25 @@ const InterviewHistory = () => {
   }
 
   return (
-    <div className="history-container">
-      <div className="history-header">
-        <h1>Interview History</h1>
+    <div className="max-w-[900px] mx-auto p-8 flex flex-col gap-6 min-h-[calc(100vh-80px)]">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-extrabold bg-gradient-to-br from-indigo-500 to-purple-500 bg-clip-text text-transparent">Interview History</h1>
         <button
-          className="btn-new-interview"
+          className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white border-none py-2 px-5 rounded-full font-semibold text-sm cursor-pointer flex items-center gap-2 hover:opacity-90"
           onClick={() => navigate("/mock-interview")}
         >
           <Plus size={16} /> New Interview
         </button>
       </div>
 
-      {error && <div className="lobby-error">{error}</div>}
+      {error && <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-center">{error}</div>}
 
       {sessions.length === 0 && !error ? (
-        <div className="history-empty">
+        <div className="text-center py-16 px-8 text-slate-400 flex flex-col items-center">
           <BookOpen size={48} />
-          <p>No interviews yet. Start your first one!</p>
+          <p className="mt-4">No interviews yet. Start your first one!</p>
           <button
-            className="btn-new-interview"
-            style={{ marginTop: "1rem" }}
+            className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white border-none py-2 px-5 rounded-full font-semibold text-sm cursor-pointer flex items-center gap-2 hover:opacity-90 mt-4"
             onClick={() => navigate("/mock-interview")}
           >
             <Plus size={16} /> Start Interview
@@ -89,14 +87,14 @@ const InterviewHistory = () => {
           {sessions.map((session) => (
             <div
               key={session._id}
-              className="history-card"
+              className="bg-white/5 border border-white/10 rounded-2xl py-5 px-6 flex items-center justify-between cursor-pointer transition-all gap-4 flex-wrap hover:border-indigo-500 hover:-translate-y-0.5 dark:bg-gray-900/70"
               onClick={() =>
                 navigate(`/mock-interview/${session._id}/results`)
               }
             >
-              <div className="history-card-info">
-                <span className="history-card-topic">{session.topic}</span>
-                <div className="history-card-meta">
+              <div className="flex flex-col gap-1.5">
+                <span className="font-bold text-lg text-slate-100 capitalize">{session.topic}</span>
+                <div className="flex flex-wrap gap-3 text-xs text-slate-400">
                   <span>{formatDate(session.createdAt)}</span>
                   <span>•</span>
                   <span style={{ textTransform: "capitalize" }}>
@@ -115,7 +113,7 @@ const InterviewHistory = () => {
                   <span>{session.totalQuestions} questions</span>
                 </div>
               </div>
-              <div className="history-card-score">
+              <div className="text-3xl font-extrabold bg-gradient-to-br from-indigo-500 to-purple-500 bg-clip-text text-transparent">
                 {session.overallScore || 0}%
               </div>
             </div>
