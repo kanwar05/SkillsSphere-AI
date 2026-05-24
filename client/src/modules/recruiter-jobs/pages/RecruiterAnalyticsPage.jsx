@@ -21,7 +21,9 @@ import {
   Award,
   BookOpen,
   Code,
-  ShieldAlert
+  ShieldAlert,
+  Download,
+  ChevronDown
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -44,6 +46,7 @@ import Navbar from "../../../shared/landing/Navbar";
 import LoadingState from "../../../shared/components/LoadingState";
 import ErrorState from "../../../shared/components/ErrorState";
 import { getRecruiterAnalytics } from "../services/jobPostingService";
+import { exportToCSV, exportToPDF } from "../../../utils/exportUtils";
 
 // Month label helper
 const MONTH_NAMES = [
@@ -181,6 +184,31 @@ const RecruiterAnalyticsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
+
+  const handleExportCSV = () => {
+    setIsExportDropdownOpen(false);
+    if (!analytics) return;
+    
+    // Create a comprehensive summary row for the CSV
+    const data = [{
+      "Report Date": new Date().toLocaleDateString(),
+      "Total Jobs": analytics.totalJobs || 0,
+      "Total Applicants": analytics.totalApplicants || 0,
+      "Avg AI Match Score": `${analytics.averageAiMatchScore || 0}%`,
+      "Top Match Candidates": analytics.topCandidatesCount || 0,
+      "Avg ATS Score": `${analytics.averageAtsScore || 0}%`,
+      "ATS Ready Percentage": `${analytics.atsReadyPercentage || 0}%`,
+      "OSS Contributors": analytics.ossContributorCount || 0,
+    }];
+    
+    exportToCSV("Recruiter_Intelligence_Summary.csv", data);
+  };
+
+  const handleExportPDF = () => {
+    setIsExportDropdownOpen(false);
+    exportToPDF("analytics-dashboard", "Recruiter_Analytics_Snapshot.pdf");
+  };
 
   const fetchAnalytics = async () => {
     setLoading(true);
@@ -308,7 +336,7 @@ const RecruiterAnalyticsPage = () => {
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,#0f172a,#020617)] p-4 sm:p-6 pt-24 sm:pt-32 text-slate-100">
       <Navbar />
 
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
+      <div id="analytics-dashboard" className="mx-auto flex w-full max-w-7xl flex-col gap-8">
         
         {/* Header Block */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -323,13 +351,45 @@ const RecruiterAnalyticsPage = () => {
               Intelligence Dashboard
             </h1>
           </div>
-          <Link
-            to="/recruiter/jobs"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/5 bg-slate-900/40 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-800 hover:text-white backdrop-blur-sm transition-all duration-300 w-fit"
-          >
-            <ArrowLeft size={16} />
-            Back to Jobs
-          </Link>
+          <div className="flex items-center gap-3 relative">
+            <Link
+              to="/recruiter/jobs"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/5 bg-slate-900/40 px-4 py-2.5 text-sm font-semibold text-slate-300 hover:bg-slate-800 hover:text-white backdrop-blur-sm transition-all duration-300 w-fit"
+            >
+              <ArrowLeft size={16} />
+              Back to Jobs
+            </Link>
+            
+            <div className="relative">
+              <button
+                onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+                className="inline-flex items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-600/10 px-4 py-2.5 text-sm font-semibold text-blue-400 hover:bg-blue-600/20 hover:text-blue-300 backdrop-blur-sm transition-all duration-300"
+              >
+                <Download size={16} />
+                Export Report
+                <ChevronDown size={14} className={`transition-transform ${isExportDropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+              
+              {isExportDropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-white/10 bg-slate-900/95 p-2 shadow-2xl backdrop-blur-md z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <button
+                    onClick={handleExportPDF}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                  >
+                    <FileEdit size={14} />
+                    Export as PDF Snapshot
+                  </button>
+                  <button
+                    onClick={handleExportCSV}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                  >
+                    <BarChart3 size={14} />
+                    Export Summary (CSV)
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* High-Level Overview Metrics */}

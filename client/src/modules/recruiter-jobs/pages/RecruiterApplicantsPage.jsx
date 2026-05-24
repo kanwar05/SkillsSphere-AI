@@ -18,11 +18,13 @@ import {
   RefreshCw,
   X,
   Code,
-  ChevronDown
+  ChevronDown,
+  Download
 } from 'lucide-react';
 import Navbar from '../../../shared/landing/Navbar';
 import { Button, LoadingState, ErrorState, EmptyState, StatusUpdateModal, StatusTimeline } from '../../../shared/components';
 import { getJobApplications, updateApplicationStatus, getJobPostingById, exportJobApplicationsCSV } from '../services/jobPostingService';
+import { exportToCSV, exportToPDF } from '../../../utils/exportUtils';
 
 const statusStyles = {
   pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
@@ -93,6 +95,33 @@ const RecruiterApplicantsPage = () => {
   
   // Smart Preset Tracker
   const [activePreset, setActivePreset] = useState('');
+  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
+
+  const handleExportCSV = () => {
+    setIsExportDropdownOpen(false);
+    if (!applicants || applicants.length === 0) return;
+
+    const data = applicants.map(app => ({
+      "Name": app.applicant?.name || "Anonymous",
+      "Email": app.applicant?.email || "N/A",
+      "Status": app.status,
+      "Applied On": new Date(app.createdAt).toLocaleDateString(),
+      "AI Match Score": app.aiMatchScore ? `${app.aiMatchScore}%` : "N/A",
+      "Match Category": app.matchCategory || "N/A",
+      "ATS Compatibility": app.matchBreakdown?.atsCompatibility ? `${app.matchBreakdown.atsCompatibility}%` : "N/A",
+      "Skill Match": app.matchBreakdown?.skillMatch ? `${app.matchBreakdown.skillMatch}%` : "N/A",
+      "Project Strength": app.matchBreakdown?.projectStrength ? `${app.matchBreakdown.projectStrength}%` : "N/A",
+      "Contribution Activity": app.matchBreakdown?.contributionActivity || "N/A",
+      "Career Readiness": app.matchBreakdown?.careerReadiness || "N/A",
+    }));
+
+    exportToCSV(`Candidates_${job?.title?.replace(/[^a-z0-9]/gi, '_') || 'Job'}.csv`, data);
+  };
+
+  const handleExportPDF = () => {
+    setIsExportDropdownOpen(false);
+    exportToPDF("applicants-container", `Candidate_List_${job?.title?.replace(/[^a-z0-9]/gi, '_') || 'Job'}.pdf`);
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -249,15 +278,34 @@ const RecruiterApplicantsPage = () => {
             </div>
           </div>
           
-          <div className="flex items-center gap-3 shrink-0">
-            <Button
-              variant="outline"
-              onClick={handleExportCSV}
-              disabled={applicants.length === 0}
-              className="border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800"
+          <div className="relative z-20">
+            <button
+              onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+              className="inline-flex items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-600/10 px-4 py-2.5 text-sm font-semibold text-blue-400 hover:bg-blue-600/20 hover:text-blue-300 backdrop-blur-sm transition-all duration-300"
             >
-              Export Matches to CSV
-            </Button>
+              <Download size={16} />
+              Export Candidates
+              <ChevronDown size={14} className={`transition-transform ${isExportDropdownOpen ? "rotate-180" : ""}`} />
+            </button>
+            
+            {isExportDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-white/10 bg-slate-900/95 p-2 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-200">
+                <button
+                  onClick={handleExportPDF}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                >
+                  <FileText size={14} />
+                  Export List (PDF)
+                </button>
+                <button
+                  onClick={handleExportCSV}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                >
+                  <Filter size={14} />
+                  Export Data (CSV)
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -515,7 +563,7 @@ const RecruiterApplicantsPage = () => {
                 )}
               </EmptyState>
             ) : (
-              <div className="grid grid-cols-1 gap-4">
+              <div id="applicants-container" className="grid grid-cols-1 gap-4">
                 {applicants.map((app, index) => {
                   const isTopCandidate = sortBy === 'matchScore' && app.aiMatchScore >= 85;
                   const rank = sortBy === 'matchScore' ? index + 1 : null;
