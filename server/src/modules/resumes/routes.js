@@ -11,7 +11,7 @@ import {
   compareVersions,
 } from "./controller.js";
 import { generateCoverLetterForResume } from "./coverLetter.controller.js";
-import { resumeAnalysisLimiter } from "../../middleware/rateLimiter.js";
+import { resumeAnalysisLimiter, aiActionLimiter } from "../../middleware/rateLimiter.js";
 
 import { protect, authorizeRoles } from "../../middleware/authMiddleware.js";
 
@@ -79,6 +79,7 @@ router.post(
  */
 router.post(
   "/analyze",
+  resumeAnalysisLimiter,
   protect,
   authorizeRoles("student"),
   parseResumeUpload,
@@ -146,7 +147,7 @@ router.get("/result/:id", protect, getResumeResult);
  *       200:
  *         description: Strategic comparison generated
  */
-router.post("/compare", protect, compareVersions);
+router.post("/compare", aiActionLimiter, protect, compareVersions);
 
 /**
  * @openapi
@@ -183,6 +184,6 @@ router.post("/compare", protect, compareVersions);
  *       500:
  *         description: AI generation failed
  */
-router.post("/:id/cover-letter", protect, authorizeRoles("student"), generateCoverLetterForResume);
+router.post("/:id/cover-letter", aiActionLimiter, protect, authorizeRoles("student"), generateCoverLetterForResume);
 
 export default router;

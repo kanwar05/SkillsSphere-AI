@@ -15,6 +15,7 @@ import {
   getTutorSession,
   submitTutorFeedback,
 } from "./controller.js";
+import { aiActionLimiter } from "../../middleware/rateLimiter.js";
 
 const router = express.Router();
 
@@ -88,7 +89,7 @@ router.get("/ai-status", getAIServiceStatus);
  *       201:
  *         description: Session started
  */
-router.post("/start", startInterview);
+router.post("/start", aiActionLimiter, startInterview);
 
 /**
  * @openapi
@@ -105,7 +106,7 @@ router.post("/start", startInterview);
 router.get("/history", getInterviewHistory);
 
 router.get("/:id", getSession);
-router.post("/:id/answer", upload.single("audio"), submitAnswer);
+router.post("/:id/answer", aiActionLimiter, upload.single("audio"), submitAnswer);
 router.post("/:id/complete", completeInterview);
 
 /**

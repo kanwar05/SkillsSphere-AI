@@ -36,6 +36,7 @@ const notificationSchema = new mongoose.Schema(
         "application",
         "new_application",
         "skill_gap_alert",
+        "application_status",
       ],
       default: "info",
       required: [true, "Notification type is required"],

@@ -1,7 +1,10 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import { validateEnv } from "./src/config/validateEnv.js";
+
 dotenv.config({ override: true });
+validateEnv();
 
 import http from "http";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -30,15 +33,14 @@ import { initNotificationSockets } from "./src/modules/notifications/socket.js";
 import { verifySocketToken } from "./src/middleware/authMiddleware.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./src/config/swaggerConfig.js";
-import { validateEnv } from "./src/config/validateEnv.js";
 import analyticsRoutes from "./src/modules/analytics/routes.js";
+import { globalLimiter } from "./src/middleware/rateLimiter.js";
+
 const app = express();
 if (process.env.TRUST_PROXY === 'true') {
   app.set("trust proxy", 1);
 }
 const PORT = process.env.PORT || 5000;
-
-validateEnv();
 
 const server = http.createServer(app);
 
@@ -85,8 +87,10 @@ app.use((req, res, next) => {
   next();
 });
 
-await connectRedis();
-connectDB();
+// Apply global rate limiting to all /api routes
+app.use("/api", globalLimiter);
+
+await connectDB();
 logEvaluatorConfig();
 
 app.get("/health", (req, res) => {

@@ -17,8 +17,14 @@ const SALT_ROUNDS = 12;
 const OTP_EXPIRY_MINUTES = 5;
 const MAX_OTP_ATTEMPTS = 5;
 
-// Google OAuth client
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+// Google OAuth client (initialized lazily to avoid crash on import)
+let googleClient;
+const getGoogleClient = () => {
+  if (!googleClient) {
+    googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+  }
+  return googleClient;
+};
 
 // 🔐 JWT generator
 const buildAuthToken = (user) => {
@@ -280,6 +286,7 @@ export const exchangeAuthCodeForToken = async (code) => {
 // 🔐 Google Token Verification
 export const verifyGoogleToken = async (token) => {
   try {
+    const client = getGoogleClient();
     const ticket = await client.verifyIdToken({
       id_token: token,
       audience: process.env.GOOGLE_CLIENT_ID,

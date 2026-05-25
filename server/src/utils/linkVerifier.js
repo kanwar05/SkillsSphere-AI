@@ -1,40 +1,19 @@
 import axios from "axios";
-import dns from "dns";
+import dns from "dns/promises";
 
-/**
- * Checks if an IP address belongs to a private, loopback, or cloud metadata range.
- * This prevents SSRF attacks targeting internal networks.
- * 
- * @param {string} ip - The IP address to check
- * @returns {boolean} True if the IP is private/internal
- */
+// Function to check if an IP is private/local
 const isPrivateIP = (ip) => {
-  // IPv4 Loopback (127.0.0.0/8)
-  if (ip.startsWith("127.")) return true;
-  
-  // Cloud Metadata (169.254.0.0/16) - Critical for AWS/GCP SSRF
-  if (ip.startsWith("169.254.")) return true;
-  
-  // IPv4 Private Networks (RFC 1918)
-  // 10.0.0.0/8
-  if (ip.startsWith("10.")) return true;
-  
-  // 172.16.0.0/12 (172.16.x.x - 172.31.x.x)
-  if (ip.startsWith("172.")) {
-    const secondOctet = parseInt(ip.split(".")[1], 10);
-    if (secondOctet >= 16 && secondOctet <= 31) return true;
-  }
-  
-  // 192.168.0.0/16
-  if (ip.startsWith("192.168.")) return true;
+  const parts = ip.split(".").map(Number);
+  if (parts.length !== 4) return false;
 
-  // IPv4 Special-Purpose (0.0.0.0/8)
-  if (ip.startsWith("0.")) return true;
-
-  // IPv6 Loopback
-  if (ip === "::1") return true;
-
-  return false;
+  return (
+    parts[0] === 10 ||
+    (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||
+    (parts[0] === 192 && parts[1] === 168) ||
+    parts[0] === 127 ||
+    (parts[0] === 169 && parts[1] === 254) ||
+    parts[0] === 0 // 0.0.0.0
+  );
 };
 
 /**
@@ -46,29 +25,25 @@ export const verifyLink = async (url) => {
   if (!url) return { url, isValid: false, status: null };
 
   try {
-    let parsedUrl;
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname;
+
+    // Check if hostname is directly an IP and private
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname) && isPrivateIP(hostname)) {
+      return { url, isValid: false, status: 403, error: "Access to private IP is forbidden" };
+    }
+
+    // Resolve DNS to prevent SSRF via DNS rebinding / internal routing
     try {
-      parsedUrl = new URL(url);
-    } catch (e) {
-      return { url, isValid: false, status: null, error: "Invalid URL format" };
-    }
-
-    // Must be HTTP or HTTPS
-    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
-      return { url, isValid: false, status: null, error: "Unsupported protocol" };
-    }
-
-    // SSRF Protection: Resolve the hostname and block private/internal IPs
-    const addresses = await dns.promises.resolve(parsedUrl.hostname).catch(() => []);
-    
-    // If we can't resolve it or it resolves to a local IP, block it
-    if (addresses.length === 0) {
-       return { url, isValid: false, status: null, error: "DNS resolution failed" };
-    }
-    
-    for (const ip of addresses) {
-      if (isPrivateIP(ip)) {
-        return { url, isValid: false, status: null, error: "Blocked SSRF attempt (Internal IP)" };
+      const { address } = await dns.lookup(hostname);
+      if (isPrivateIP(address)) {
+        return { url, isValid: false, status: 403, error: "Access to private IP is forbidden" };
+      }
+    } catch (dnsError) {
+      // If DNS resolution fails, block the request if it looks suspicious, 
+      // otherwise we could just let Axios fail naturally.
+      if (hostname === "localhost" || hostname.includes("127.0.0.1") || hostname.includes("169.254.169.254")) {
+         return { url, isValid: false, status: 403, error: "Access to private IP is forbidden" };
       }
     }
 

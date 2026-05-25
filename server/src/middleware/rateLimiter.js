@@ -93,3 +93,41 @@ export const resumeAnalysisLimiter = rateLimit({
     res.status(429).json(options.message);
   }
 });
+
+/**
+ * Global Rate Limiter
+ * Generous limit for all /api endpoints to prevent basic DoS
+ */
+export const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: parseInt(process.env.GLOBAL_LIMIT_MAX) || 300, 
+  message: {
+    success: false,
+    message: "Too many requests from this IP, please try again after 15 minutes.",
+    error: "RATE_LIMIT_EXCEEDED"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res, next, options) => {
+    res.status(429).json(options.message);
+  }
+});
+
+/**
+ * AI Action Rate Limiter
+ * Stricter limit for computationally expensive endpoints like Interviews and Cover Letters
+ */
+export const aiActionLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: parseInt(process.env.AI_LIMIT_MAX) || 20, 
+  message: {
+    success: false,
+    message: "You have exceeded the maximum number of AI actions. Please try again after 1 hour.",
+    error: "RATE_LIMIT_EXCEEDED"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res, next, options) => {
+    res.status(429).json(options.message);
+  }
+});

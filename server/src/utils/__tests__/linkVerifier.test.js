@@ -94,3 +94,24 @@ test("verifyLinks - verifies multiple links in parallel", async () => {
 
   mock.restoreAll();
 });
+
+test("verifyLink - blocks access to private IPs (SSRF protection)", async () => {
+  const result = await verifyLink("http://192.168.1.1/admin");
+  assert.equal(result.isValid, false);
+  assert.equal(result.status, 403);
+  assert.equal(result.error, "Access to private IP is forbidden");
+});
+
+test("verifyLink - blocks access to AWS metadata endpoint (SSRF protection)", async () => {
+  const result = await verifyLink("http://169.254.169.254/latest/meta-data");
+  assert.equal(result.isValid, false);
+  assert.equal(result.status, 403);
+  assert.equal(result.error, "Access to private IP is forbidden");
+});
+
+test("verifyLink - blocks access to localhost (SSRF protection)", async () => {
+  const result = await verifyLink("http://127.0.0.1:5000/api");
+  assert.equal(result.isValid, false);
+  assert.equal(result.status, 403);
+  assert.equal(result.error, "Access to private IP is forbidden");
+});
