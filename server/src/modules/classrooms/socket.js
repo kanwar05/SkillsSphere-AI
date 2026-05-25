@@ -1,4 +1,5 @@
 import ClassroomSession from "../../database/models/ClassroomSession.js";
+import { executeCode } from "../../utils/codeExecutor.js";
 
 const roomStates = new Map();
 
@@ -255,6 +256,31 @@ export function initClassroomSockets(io) {
       socket.to(roomId).emit("code-cursor", {
         cursorPosition,
         senderId: socket.id,
+        senderName: socket.data.user?.name || "Participant",
+      });
+    });
+
+    // Execute code event
+    socket.on("execute-code-request", async ({ roomId, code, language }) => {
+      if (!socket.data || socket.data.roomId !== roomId) {
+        socket.emit("unauthorized", {
+          message: "Cross-classroom action detected",
+        });
+        return;
+      }
+
+      // Broadcast that execution has started
+      io.to(roomId).emit("execution-started", {
+        senderName: socket.data.user?.name || "Participant",
+      });
+
+      // Execute code via API
+      const result = await executeCode(language, code);
+
+      // Broadcast result
+      io.to(roomId).emit("execution-result", {
+        output: result.output,
+        isError: result.isError,
         senderName: socket.data.user?.name || "Participant",
       });
     });
