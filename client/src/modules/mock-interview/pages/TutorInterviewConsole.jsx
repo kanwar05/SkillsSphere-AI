@@ -105,11 +105,11 @@ const TutorInterviewConsole = () => {
   };
 
   if (loading) return <div className="min-h-screen bg-slate-50 dark:bg-slate-900 px-6 pb-6 pt-24"><Navbar /><div className="text-center">Loading session data...</div></div>;
-  if (!session) return <div className="min-h-screen bg-slate-50 dark:bg-slate-900 px-6 pb-6 pt-24"><Navbar /><div className="text-center">Session not found</div></div>;
+  if (!session) return <div className="min-h-screen bg-slate-50 dark:bg-slate-900 px-6 pb-6 pt-24"><div className="text-center">Session not found</div></div>;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 px-6 pb-6 pt-24">
-      <Navbar />
+      
       <div className="max-w-5xl mx-auto space-y-6">
         
         <div className="flex items-center justify-between">
