@@ -9,7 +9,6 @@ import LoadingState from "../../../shared/components/LoadingState";
 import ErrorState from "../../../shared/components/ErrorState";
 import EmptyState from "../../../shared/components/EmptyState";
 import JobCardSkeleton from "../../student-jobs/components/JobCardSkeleton";
-import { Pagination } from "../../../shared/components";
 import JobPostingCard from "../components/JobPostingCard";
 import { JobViewerCard, Pagination } from "../../../shared/components";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";

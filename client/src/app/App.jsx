@@ -21,6 +21,7 @@ const RecruiterAnalyticsPage = lazy(() => import("../modules/recruiter-jobs/page
 const CreateJobPostingPage = lazy(() => import("../modules/recruiter-jobs/pages/CreateJobPostingPage"));
 const EditJobPostingPage = lazy(() => import("../modules/recruiter-jobs/pages/EditJobPostingPage"));
 const RecruiterApplicantsPage = lazy(() => import("../modules/recruiter-jobs/pages/RecruiterApplicantsPage"));
+const TalentFinderPage = lazy(() => import("../modules/recruiter-jobs/pages/TalentFinderPage"));
 const JobBoardPage = lazy(() => import("../modules/student-jobs/pages/JobBoardPage"));
 const MyApplicationsPage = lazy(() => import("../modules/student-jobs/pages/MyApplicationsPage"));
 const RoadmapPage = lazy(() => import("../modules/roadmap/pages/RoadmapPage"));
@@ -162,6 +163,14 @@ function App() {
           element={
             <ProtectedRoute requiredRole="recruiter">
               <RecruiterApplicantsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/recruiter/talent-finder"
+          element={
+            <ProtectedRoute requiredRole="recruiter">
+              <TalentFinderPage />
             </ProtectedRoute>
           }
         />
