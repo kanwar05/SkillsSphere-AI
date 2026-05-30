@@ -10,10 +10,12 @@ import JobApplyForm from "../components/JobApplyForm";
 import { getJobs, applyToJob, getMyAppliedJobIds } from "../services/jobService";
 import JobCardSkeleton from "../components/JobCardSkeleton";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
+import { useToast } from "../../../shared/components/toast/ToastProvider";
 
 const JobBoardPage = () => {
   useDocumentTitle("Job Board");
   const { token, user } = useSelector((state) => state.auth);
+  const toast = useToast();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -82,7 +84,7 @@ const JobBoardPage = () => {
         setAppliedJobIds((prev) => new Set([...prev, jobId]));
         setApplyModalJob(null);
       } else {
-        alert(msg);
+        toast.error(msg);
       }
     } finally {
       setApplyingJobId(null);

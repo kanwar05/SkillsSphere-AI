@@ -89,6 +89,13 @@ SkillSphere AI aims to simplify the path from learning to hiring by giving users
    - Protection against user enumeration
    - OTP attempt limiting for security
 
+9. **AI Talent Finder & Candidate Direct Search**
+   Advanced talent discovery search engine for recruiters. (Route: `/recruiter/talent-finder`)
+   - Search the database of opted-in candidate resumes by name, email, skills, and background text
+   - Advanced filters for technical specializations, graduation year range, and minimum ATS scores
+   - Dynamic AI pipeline evaluation to compute a match scorecard against any of the recruiter's active jobs
+   - One-click recruiter invitation triggers that deliver real-time Socket.IO notifications to candidate dashboards
+
 ---
 
 ## Target Users
@@ -192,12 +199,14 @@ The following structure keeps the project modular and easy to scale for new cont
 SkillSphere-AI/
 ├── client/                          # React frontend (Vite)
 │   ├── src/
-│   │   ├── modules/                 # Feature-based modules (Auth, Resumes, etc.)
+│   │   ├── modules/                 # Feature-based modules (Auth, Resumes, recruiter-jobs, etc.)
+│   │   │   └── recruiter-jobs/      # Talent Finder dashboard, page, services
 │   │   ├── shared/                  # Reusable UI components
 │   │   └── services/                # API service layer
 ├── server/                          # Express backend
 │   ├── src/
-│   │   ├── modules/                 # Backend business logic (Auth, Resumes, Jobs, Roadmap)
+│   │   ├── modules/                 # Backend business logic (Auth, Resumes, recruiter, etc.)
+│   │   │   └── recruiter/           # Talent Finder controller and routes
 │   │   ├── database/                # Mongoose models (User, Resume, JobApplication, LearningProgress)
 │   │   └── middleware/              # Auth, RBAC, and Upload handlers
 ├── ai-ml/                           # AI/ML intelligence layer
@@ -231,6 +240,10 @@ SkillSphere-AI/
 - `GET /api/roadmap/me`: fetch user's learning roadmap and progress
 - `POST /api/roadmap/sync`: sync roadmap with latest analysis suggestions
 - `PATCH /api/roadmap/update-topic`: update status of a specific roadmap milestone
+
+- `GET /api/recruiter/talent-finder`: search candidate directory of opted-in student resumes (Recruiter only; filters: `query`, `specializations`, `gradYearMin`, `gradYearMax`, `atsMin`, `limit`, `page`)
+- `POST /api/recruiter/match-candidate`: run Gemini AI matching pipeline on candidate's resume text against a specific job description (Recruiter only)
+- `POST /api/recruiter/invite-candidate`: send job application invitation to a candidate (Recruiter only; sends real-time socket notification)
 
 - `GET /uploads/:filename`
 - `POST /api/jobs`: create a new job (Recruiter only)

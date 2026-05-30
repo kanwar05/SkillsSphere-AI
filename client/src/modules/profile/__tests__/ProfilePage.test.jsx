@@ -49,6 +49,7 @@ const createStore = (user = baseUser) =>
   });
 
 import { ThemeProvider } from "../../../shared/contexts/ThemeContext";
+import { ToastProvider } from "../../../shared/components/toast/ToastProvider";
 
 const renderProfile = (user = baseUser) =>
   render(
@@ -56,6 +57,9 @@ const renderProfile = (user = baseUser) =>
       <MemoryRouter>
         <ThemeProvider>
           <ProfilePage />
+          <ToastProvider>
+            <ProfilePage />
+          </ToastProvider>
         </ThemeProvider>
       </MemoryRouter>
     </Provider>,
