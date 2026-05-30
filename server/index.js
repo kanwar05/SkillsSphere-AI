@@ -4,9 +4,12 @@ import cors from "cors";
 import compression from "compression";
 import mongoose from "mongoose";
 import { validateEnv } from "./src/config/validateEnv.js";
+import { setupGlobalLogSanitizer } from "./src/utils/logSanitizer.js";
 
 dotenv.config({ override: true });
 validateEnv();
+setupGlobalLogSanitizer();
+
 
 import http from "http";
 import { GoogleGenerativeAI } from "@google/generative-ai";
