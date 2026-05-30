@@ -13,10 +13,12 @@ import {
 import CoverLetterModal from "../../../shared/components/CoverLetterModal";
 import { generateCoverLetter } from "../../resume-analyzer/services/resumeService";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
+import { useToast } from "../../../shared/components/toast/ToastProvider";
 
 
 const CoverLetterHistoryPage = () => {
   useDocumentTitle("Cover Letter History");
+  const toast = useToast();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -62,7 +64,7 @@ const CoverLetterHistoryPage = () => {
       }
       throw new Error("Invalid response format from server.");
     } catch (err) {
-      alert("Failed to regenerate: " + err.message);
+      toast.error("Failed to regenerate: " + err.message);
       return null;
     }
   };

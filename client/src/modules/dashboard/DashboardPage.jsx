@@ -138,25 +138,25 @@ const DashboardPage = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center ${user?.isVerified ? "bg-emerald-500/20 text-emerald-400" : "bg-slate-500/20 text-slate-400"}`}>
                       <BadgeCheck size={16} />
                     </div>
                     <span className="text-sm font-medium">
-                      Verified Account
+                      {user?.isVerified ? "Verified Account" : "Unverified Account"}
                     </span>
                   </div>
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>
+                  {user?.isVerified && <div className="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>}
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center ${user?.proFeatures ? "bg-blue-500/20 text-blue-400" : "bg-slate-500/20 text-slate-400"}`}>
                       <Sparkles size={16} />
                     </div>
                     <span className="text-sm font-medium">Pro Features</span>
                   </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500 text-white">
-                    ACTIVE
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${user?.proFeatures ? "bg-blue-500 text-white" : "bg-slate-500/20 text-slate-500"}`}>
+                    {user?.proFeatures ? "ACTIVE" : "INACTIVE"}
                   </span>
                 </div>
               </div>

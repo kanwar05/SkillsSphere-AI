@@ -16,6 +16,13 @@ const SocketNotificationListener = () => {
   const socketRef = useRef(null);
   const dispatch = useDispatch();
 
+  // Keep a stable ref to toast so the socket effect doesn't re-run
+  // when the toast context object changes identity across renders
+  const toastRef = useRef(toast);
+  useEffect(() => {
+    toastRef.current = toast;
+  }, [toast]);
+
   useEffect(() => {
     const userId = user?._id || user?.id;
 
@@ -55,9 +62,9 @@ const SocketNotificationListener = () => {
         const title = "Application Update";
         
         if (status === "rejected") {
-          toast.error(message, title);
+          toastRef.current.error(message, title);
         } else {
-          toast.success(message, title);
+          toastRef.current.success(message, title);
         }
 
         // Fetch updated unread count from the DB to sync the unread badge
@@ -74,9 +81,9 @@ const SocketNotificationListener = () => {
         }
 
         if (notif.type === "skill_gap_alert") {
-          toast.error(notif.message, notif.title || "Skill Gap Alert");
+          toastRef.current.error(notif.message, notif.title || "Skill Gap Alert");
         } else {
-          toast.success(notif.message, notif.title || "Notification");
+          toastRef.current.success(notif.message, notif.title || "Notification");
         }
       });
 
@@ -95,10 +102,17 @@ const SocketNotificationListener = () => {
       socketRef.current.emit("join-notifications");
     }
 
-    return () => {};
-  }, [user, token, toast]);
+    // Proper cleanup: disconnect socket when component unmounts or deps change
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, [user, token, dispatch]);
 
   return null; // This component has no UI
 };
 
 export default SocketNotificationListener;
+

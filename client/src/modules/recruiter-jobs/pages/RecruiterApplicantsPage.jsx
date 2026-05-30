@@ -27,6 +27,7 @@ import { Button, LoadingState, ErrorState, EmptyState, StatusUpdateModal, Status
 import { getJobApplications, updateApplicationStatus, getJobPostingById, exportJobApplicationsCSV } from '../services/jobPostingService';
 import { exportToCSV, exportToPDF } from '../../../utils/exportUtils';
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
+import { useToast } from "../../../shared/components/toast/ToastProvider";
 
 
 const statusStyles = {
@@ -104,6 +105,7 @@ const RecruiterApplicantsPage = () => {
   const { id: jobId } = useParams();
   const navigate = useNavigate();
   const { token } = useSelector((state) => state.auth);
+  const toast = useToast();
 
   const [job, setJob] = useState(null);
   const [applicants, setApplicants] = useState([]);
@@ -203,7 +205,7 @@ const RecruiterApplicantsPage = () => {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert(err.message || "Failed to export matches.");
+      toast.error(err.message || "Failed to export matches.");
     }
   };
 

@@ -36,7 +36,7 @@ export const protect = asyncHandler(async (req, res, next) => {
     }
 
     // 4) Check if user still exists
-    const currentUser = await User.findById(decoded.userId).select("-password");
+    const currentUser = await User.findById(decoded.userId).select("-password").lean();
     if (!currentUser) {
       return next(
         new AppError("The user belonging to this token no longer exists.", 401)
@@ -80,7 +80,7 @@ export const verifySocketToken = async (token) => {
   if (decoded.jti && await isTokenBlacklisted(decoded.jti)) {
     throw new Error("Token has been revoked");
   }
-  const user = await User.findById(decoded.userId).select("-password");
+  const user = await User.findById(decoded.userId).select("-password").lean();
   if (!user) throw new Error("User not found");
   return user;
 };

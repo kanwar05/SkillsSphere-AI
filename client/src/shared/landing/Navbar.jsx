@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Home, FileText, LayoutDashboard, MessageSquare, LogIn, UserPlus, X, Menu, LogOut, User, ChevronDown, Briefcase, Moon, Sun, Sparkles, Rocket, Video, Bell } from 'lucide-react';
+import { Home, FileText, LayoutDashboard, MessageSquare, LogIn, UserPlus, X, Menu, LogOut, User, ChevronDown, Briefcase, Moon, Sun, Sparkles, Rocket, Video, Bell, Search } from 'lucide-react';
 import Button from './Button';
 import { logout } from '../../features/auth/authSlice';
 import { getProtectedAssetUrl } from '../../utils/protectedAssetUrl';
@@ -85,7 +85,10 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', path: '/', icon: <Home size={20} /> },
     ...(user?.role === 'recruiter' 
-      ? [{ name: 'Manage Jobs', path: '/recruiter/jobs', icon: <Briefcase size={20} /> }]
+      ? [
+          { name: 'Manage Jobs', path: '/recruiter/jobs', icon: <Briefcase size={20} /> },
+          { name: 'Talent Finder', path: '/recruiter/talent-finder', icon: <Search size={20} /> }
+        ]
       : user?.role === 'tutor'
       ? [{ name: 'Live Classrooms', path: '/classrooms', icon: <Video size={20} /> }]
       : [

@@ -46,6 +46,11 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    proFeatures: {
+      type: Boolean,
+      default: false,
+    },
+
     verificationToken: { type: String, default: null },
     verificationTokenExpires: { type: Date, default: null },
     resetPasswordToken: { type: String, default: null },

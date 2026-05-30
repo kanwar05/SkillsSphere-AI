@@ -108,5 +108,19 @@ learningProgressSchema.pre("save", function (next) {
   next();
 });
 
+// Virtual to calculate readiness boost based on completed contribution milestones
+learningProgressSchema.virtual("readinessBoost").get(function () {
+  if (!this.roadmap) return 0;
+  
+  const contributionTopics = this.roadmap.filter((t) => t.type === "contribution");
+  if (contributionTopics.length === 0) return 0;
+
+  const completedContributions = contributionTopics.filter(
+    (t) => t.status === "completed" || t.isVerified
+  ).length;
+
+  return completedContributions * 5; // Each completed contribution adds 5% boost
+});
+
 const LearningProgress = mongoose.model("LearningProgress", learningProgressSchema);
 export default LearningProgress;

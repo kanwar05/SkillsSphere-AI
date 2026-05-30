@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import compression from "compression";
 import mongoose from "mongoose";
 import { validateEnv } from "./src/config/validateEnv.js";
 
@@ -25,6 +26,7 @@ import notificationRoutes from "./src/modules/notifications/routes.js";
 import userRoutes from "./src/modules/users/routes.js";
 import interviewRoutes from "./src/modules/interviews/routes.js";
 import fileRoutes from "./src/modules/files/routes.js";
+import recruiterRoutes from "./src/modules/recruiter/routes.js";
 import { initClassroomSockets } from "./src/modules/classrooms/socket.js";
 import { initInterviewSockets } from "./src/modules/interviews/socket.js";
 import { initRoadmapSockets } from "./src/modules/roadmap/socket.js";
@@ -76,11 +78,12 @@ io.use(async (socket, next) => {
 
 setIO(io);
 
+app.use(compression());
 app.use(cors({
   origin: ALLOWED_ORIGINS,
   credentials: true,
 }));
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 
 // Security headers
 app.use((req, res, next) => {
@@ -96,6 +99,13 @@ await connectDB();
 await connectRedis();
 logEvaluatorConfig();
 
+// Initialize Gemini AI client once at startup (not per-request)
+let geminiModel = null;
+if (process.env.GEMINI_API_KEY) {
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+}
+
 app.get("/health", (req, res) => {
   res.json({ status: "OK", db: isConnected ? "connected" : "disconnected" });
 });
@@ -109,18 +119,15 @@ app.post("/api/chat", async (req, res) => {
       return res.status(400).json({ error: "Message required" });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!geminiModel) {
       return res.status(503).json({ error: "AI service is currently unconfigured. Please set GEMINI_API_KEY in .env" });
     }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `You are the "SkillsSphere Career Assistant", an expert AI specializing in tech careers, resumes, recruitment, and technical interviews. 
 Keep your answers concise, helpful, and professional. If the user asks something completely unrelated to careers or the platform, politely decline to answer.
 User message: ${message}`;
 
-    const result = await model.generateContent(prompt);
+    const result = await geminiModel.generateContent(prompt);
     const reply = result.response.text();
 
     res.json({ reply });
@@ -143,6 +150,7 @@ app.use("/api/interviews", requireDB, interviewRoutes);
 app.use("/api/files", requireDB, fileRoutes);
 app.use("/api/notifications", requireDB, notificationRoutes);
 app.use("/api/analytics", requireDB, analyticsRoutes);
+app.use("/api/recruiter", requireDB, recruiterRoutes);
 
 initClassroomSockets(io);
 initNotificationSockets(io);

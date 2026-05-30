@@ -9,11 +9,13 @@ import JobApplyForm from "../../student-jobs/components/JobApplyForm";
 import { applyToJob, getMyAppliedJobIds } from "../../student-jobs/services/jobService";
 import { getRecommendations } from "../services/matcherService";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
+import { useToast } from "../../../shared/components/toast/ToastProvider";
 
 export default function JobMatcherPage() {
   useDocumentTitle("Job Matcher");
   const { token, user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [jobs, setJobs] = useState([]);
@@ -69,7 +71,7 @@ export default function JobMatcherPage() {
         setAppliedJobIds((prev) => new Set([...prev, jobId]));
         setApplyModalJob(null);
       } else {
-        alert(msg);
+        toast.error(msg);
       }
     } finally {
       setApplyingJobId(null);

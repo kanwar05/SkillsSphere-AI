@@ -6,6 +6,7 @@ import { apiRequest } from "../../../services/apiClient.js";
 import Navbar from "../../../shared/landing/Navbar";
 import { API_URL } from "../../../config/env";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
+import { useToast } from "../../../shared/components/toast/ToastProvider";
 
 
 const TutorInterviewConsole = () => {
@@ -13,6 +14,7 @@ const TutorInterviewConsole = () => {
   const { id } = useParams(); // wait, react-router-dom provides this
   const navigate = useNavigate();
   const { token } = useSelector((state) => state.auth);
+  const toast = useToast();
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -86,10 +88,10 @@ const TutorInterviewConsole = () => {
       });
       
       if (result.success) {
-        alert("Feedback saved successfully!");
+        toast.success("Feedback saved successfully!");
       }
     } catch (err) {
-      alert("Failed to save feedback");
+      toast.error("Failed to save feedback");
     } finally {
       setSaving(false);
     }
