@@ -87,8 +87,8 @@ export const registerUserAndIssueToken = async ({ name, email, password, role })
     token,
     user: {
       id: user._id.toString(),
-      name: user.name,
-      email: user.email,
+      name: user.get('name'),
+      email: user.get('email'),
       isVerified: skipVerification,
     },
   };
@@ -213,7 +213,11 @@ export const resendUserOTP = async (email) => {
 };
 
 export const loginUser = async (email, password) => {
+  console.log("LOGIN ATTEMPT:", { email, password });
+  import("fs").then(fs => fs.appendFileSync("/tmp/login_log.txt", `LOGIN ATTEMPT: ${email}\n`));
   const user = await User.findOne({ email });
+  import("fs").then(fs => fs.appendFileSync("/tmp/login_log.txt", `FOUND USER: ${user ? user._id : "NULL"}\n`));
+  console.log("FOUND USER:", user ? user._id : "NULL");
 
   if (!user) {
     throw new AppError("Invalid email or password", 401);
@@ -247,14 +251,14 @@ export const loginUser = async (email, password) => {
     token,
     user: {
       id: user._id.toString(),
-      name: user.name,
-      email: user.email,
+      name: user.get('name'),
+      email: user.get('email'),
       role: user.role
     }
   };
 };
 
-export const findOrCreateGoogleUser = async ({ email, name, picture }) => {
+export const findOrCreateGoogleUser = async ({ email, name, picture, role = "student" }) => {
   const existing = await User.findOne({ email });
 
   if (existing) {
@@ -268,7 +272,7 @@ export const findOrCreateGoogleUser = async ({ email, name, picture }) => {
     name,
     email,
     profilePic: picture,
-    role: "student",
+    role,
     provider: "google",
     isVerified: true,
   });
@@ -288,8 +292,8 @@ export const exchangeAuthCodeForToken = async (code) => {
     token,
     user: {
       id: user._id.toString(),
-      name: user.name,
-      email: user.email,
+      name: user.get('name'),
+      email: user.get('email'),
       role: user.role,
     },
   };

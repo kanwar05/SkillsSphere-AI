@@ -120,6 +120,10 @@ export const uploadResume = asyncHandler(async (req, res, next) => {
       mimeType: req.file.mimetype,
     },
   });
+
+  if (req.file?.path) {
+    await fsPromises.unlink(req.file.path).catch(() => {});
+  }
 });
 
 const normalizeJobSkills = (rawSkills) => {
@@ -423,14 +427,26 @@ export const compareVersions = asyncHandler(async (req, res, next) => {
  * List all resumes for the current logged-in student.
  */
 export const listResumes = asyncHandler(async (req, res, next) => {
-  const resumes = await Resume.find({ user: req.user._id })
-    .select("-resumeText")
-    .sort({ createdAt: -1 })
-    .lean();
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 10));
+  const skip = (page - 1) * limit;
+
+  const [resumes, totalCount] = await Promise.all([
+    Resume.find({ user: req.user._id })
+      .select("-resumeText")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Resume.countDocuments({ user: req.user._id })
+  ]);
 
   res.status(200).json({
     success: true,
     message: "Resumes listed successfully",
+    totalCount,
+    totalPages: Math.ceil(totalCount / limit),
+    currentPage: page,
     data: resumes,
   });
 });

@@ -80,24 +80,33 @@ export const getDashboardAnalytics = async (req, res) => {
     } 
     
     if (role === "tutor") {
-      // Tutor: Aggregated performance metrics
-      const allInterviews = await InterviewSession.find({ status: "completed" }).lean();
-      const averagePlatformScore = allInterviews.length > 0
-        ? Math.round(allInterviews.reduce((acc, curr) => acc + curr.overallScore, 0) / allInterviews.length)
-        : 0;
-        
-      const activeStudents = await LearningProgress.countDocuments({ overallProgress: { $gt: 0 } });
+  const [result, activeStudents] = await Promise.all([
+    InterviewSession.aggregate([
+      { $match: { status: "completed" } },
+      { $group: {
+        _id: null,
+        averagePlatformScore: { $avg: "$overallScore" },
+        totalMockInterviewsCompleted: { $sum: 1 }
+      }}
+    ]),
+    LearningProgress.countDocuments({ overallProgress: { $gt: 0 } })
+  ]);
 
-      return res.status(200).json({
-        success: true,
-        data: {
-          role,
-          averagePlatformScore,
-          totalMockInterviewsCompleted: allInterviews.length,
-          activeStudents
-        }
-      });
+  const averagePlatformScore = result[0]
+    ? Math.round(result[0].averagePlatformScore)
+    : 0;
+  const totalMockInterviewsCompleted = result[0]?.totalMockInterviewsCompleted || 0;
+
+  return res.status(200).json({
+    success: true,
+    data: {
+      role,
+      averagePlatformScore,
+      totalMockInterviewsCompleted,
+      activeStudents
     }
+  });
+}
 
     if (role === "recruiter") {
       // Recruiter: Talent pool density map

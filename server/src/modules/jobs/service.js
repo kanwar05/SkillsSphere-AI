@@ -637,7 +637,13 @@ export const getJobApplications = async (jobId, recruiterId, statusOrParams, sor
     });
 
     if (resumeQueryConditions.length > 0) {
-      const matchingResumes = await Resume.find({ $or: resumeQueryConditions }).select("_id").lean();
+      // Optimize: Only search resumes that are attached to applications for this job
+      const currentAppResumes = await JobApplication.distinct("resume", { job: jobId });
+      const matchingResumes = await Resume.find({ 
+        _id: { $in: currentAppResumes },
+        $or: resumeQueryConditions 
+      }).select("_id").lean();
+      
       const resumeIds = matchingResumes.map(r => r._id);
       query.resume = { $in: resumeIds };
     }
@@ -650,7 +656,14 @@ export const getJobApplications = async (jobId, recruiterId, statusOrParams, sor
       ? filters.skills
       : filters.skills.split(",").map(s => s.trim());
     const skillRegexes = skillList.map(s => new RegExp(`^${escapeRegex(s)}$`, "i"));
-    const matchingResumes = await Resume.find({ skills: { $in: skillRegexes } }).select("_id").lean();
+    
+    // Optimize: Only search resumes that are attached to applications for this job
+    const currentAppResumes = await JobApplication.distinct("resume", { job: jobId });
+    const matchingResumes = await Resume.find({ 
+      _id: { $in: currentAppResumes },
+      skills: { $in: skillRegexes } 
+    }).select("_id").lean();
+    
     const resumeIds = matchingResumes.map(r => r._id);
     query.resume = { ...query.resume, $in: resumeIds };
   }
@@ -1007,7 +1020,7 @@ export const updateApplicationStatus = async (applicationId, recruiterId, { stat
   // Create persistent notification for the student
   const notification = await Notification.create({
     userId: application.applicant,
-    type: "application_status",
+    type: "application",
     title: "Application Status Updated",
     message: `Your application for ${application.job.title} has been marked as ${status}.`,
     relatedData: { jobId: application.job._id, studentId: application.applicant, applicationId: application._id }

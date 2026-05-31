@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { encrypt, decrypt } from "../../utils/encryption.js";
 
 const resumeSchema = new mongoose.Schema(
   {
@@ -10,10 +11,14 @@ const resumeSchema = new mongoose.Schema(
     name: {
       type: String,
       default: null,
+      get: decrypt,
+      set: encrypt,
     },
     email: {
       type: String,
       default: null,
+      get: decrypt,
+      set: encrypt,
     },
     isScannedPdf: {
       type: Boolean,
@@ -30,38 +35,54 @@ const resumeSchema = new mongoose.Schema(
     phone: {
       type: String,
       default: null,
+      get: decrypt,
+      set: encrypt,
     },
     skills: {
       type: [String],
       default: [],
     },
     education: {
-      type: [String],
+      type: mongoose.Schema.Types.Mixed,
       default: [],
+      get: decrypt,
+      set: encrypt,
     },
     experience: {
-      type: [String],
+      type: mongoose.Schema.Types.Mixed,
       default: [],
+      get: decrypt,
+      set: encrypt,
     },
     projects: {
-      type: [String],
+      type: mongoose.Schema.Types.Mixed,
       default: [],
+      get: decrypt,
+      set: encrypt,
     },
     certifications: {
-      type: [String],
+      type: mongoose.Schema.Types.Mixed,
       default: [],
+      get: decrypt,
+      set: encrypt,
     },
     linkedin: {
       type: String,
       default: null,
+      get: decrypt,
+      set: encrypt,
     },
     github: {
       type: String,
       default: null,
+      get: decrypt,
+      set: encrypt,
     },
     portfolio: {
       type: String,
       default: null,
+      get: decrypt,
+      set: encrypt,
     },
     keywords: {
       type: [String],
@@ -75,6 +96,8 @@ const resumeSchema = new mongoose.Schema(
       type: String,
       default: null,
       select: false, // Don't include in queries by default for privacy
+      get: decrypt,
+      set: encrypt,
     },
     isScannedPdf: {
       type: Boolean,
@@ -159,6 +182,8 @@ const resumeSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { getters: true },
+    toObject: { getters: true },
   }
 );
 
@@ -191,5 +216,6 @@ Resume.schema.index(
 );
 
 export default Resume;
+
 
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Home, FileText, LayoutDashboard, MessageSquare, LogIn, UserPlus, X, Menu, LogOut, User, ChevronDown, Briefcase, Moon, Sun, Sparkles, Rocket, Video, Bell, Search } from 'lucide-react';
@@ -132,7 +132,7 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden lg:flex items-center gap-12 absolute left-1/2 -translate-x-1/2">
+        <div className="hidden lg:flex items-center justify-center gap-4 xl:gap-8 flex-1 px-4">
           {visibleNavLinks.map((link) => (
             <Link
               key={link.path}
@@ -196,6 +196,17 @@ const Navbar = () => {
         <div className="hidden lg:flex gap-5 items-center">
           <button
             type="button"
+            onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
+            className="hidden xl:flex items-center gap-2 h-10 px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:text-[var(--text-main)] shadow-[var(--shadow-soft)] transition-all duration-300 hover:bg-[var(--surface-hover)] group"
+            title="Search... (Ctrl+K)"
+          >
+            <Search size={16} className="opacity-70 group-hover:opacity-100" />
+            <span className="text-sm font-medium mr-2">Search...</span>
+            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-semibold bg-[var(--background)] border border-[var(--border)] rounded tracking-widest uppercase">Ctrl+K</kbd>
+          </button>
+          
+          <button
+            type="button"
             onClick={toggleTheme}
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-main)] shadow-[var(--shadow-soft)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[var(--surface-hover)]"
             aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
@@ -235,7 +246,7 @@ const Navbar = () => {
                 <div className="w-9 h-9 rounded-full bg-[var(--surface-soft)] flex items-center justify-center text-[var(--primary)] font-bold border border-[var(--border)] overflow-hidden flex-shrink-0">
                   {avatarSrc
                     ? <img src={avatarSrc} alt={user.name} className="w-full h-full object-cover" />
-                    : (user?.name?.charAt(0).toUpperCase() || <User size={18} />)
+                    : (user?.name?.charAt(0)?.toUpperCase() || <User size={18} />)
                   }
                 </div>
                 <div className="text-left hidden xl:block">
@@ -415,7 +426,7 @@ const Navbar = () => {
                   <div className="w-10 h-10 rounded-full bg-[var(--surface-soft)] flex items-center justify-center text-[var(--primary)] font-bold border border-[var(--border)] overflow-hidden flex-shrink-0">
                     {avatarSrc
                       ? <img src={avatarSrc} alt={user.name} className="w-full h-full object-cover" />
-                      : (user?.name?.charAt(0).toUpperCase() || <User size={20} />)
+                      : (user?.name?.charAt(0)?.toUpperCase() || <User size={20} />)
                     }
                   </div>
                   <div className="overflow-hidden">

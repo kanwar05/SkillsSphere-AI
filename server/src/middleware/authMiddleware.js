@@ -9,13 +9,12 @@ import { isTokenBlacklisted } from "../utils/tokenBlacklist.js";
  */
 export const protect = asyncHandler(async (req, res, next) => {
   let token;
+  const authorizationHeader = req.headers.authorization;
 
   // 1) Check if token exists in headers
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
+  const bearerMatch = authorizationHeader?.match(/^Bearer\s+([^\s]+)$/);
+  if (bearerMatch) {
+    token = bearerMatch[1];
   }
 
   if (!token) {
@@ -36,7 +35,7 @@ export const protect = asyncHandler(async (req, res, next) => {
     }
 
     // 4) Check if user still exists
-    const currentUser = await User.findById(decoded.userId).select("-password").lean();
+    const currentUser = await User.findById(decoded.userId).select("-password");
     if (!currentUser) {
       return next(
         new AppError("The user belonging to this token no longer exists.", 401)
@@ -47,8 +46,11 @@ export const protect = asyncHandler(async (req, res, next) => {
     req.user = currentUser;
     next();
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return next(new AppError("Your session has expired. Please log in again.", 401));
+    }
     return next(new AppError("Invalid token. Please log in again.", 401));
-  }
+}
 });
 
 /**
@@ -91,7 +93,7 @@ export const verifySocketToken = async (token) => {
     throw new Error("Token has been revoked");
   }
 
-  const user = await User.findById(decoded.userId).select("-password").lean();
+  const user = await User.findById(decoded.userId).select("-password");
   if (!user) {
     throw new Error("User not found");
   }

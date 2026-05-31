@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Card = ({ children, className = '', hoverEffect = false }) => {
   return (
     <div

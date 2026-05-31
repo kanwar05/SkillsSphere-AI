@@ -7,6 +7,17 @@ import { useToast } from "../../shared/components";
 import { API_URL } from "../../config/env";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { reportError } from "../../utils/errorReporter";
+import { z } from "zod";
+
+const resetSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Please enter a valid email"),
+  otp: z.string().length(6, "OTP must be exactly 6 digits"),
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password")
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
 
 const RESET_PASSWORD_ERROR_MESSAGE =
   "Unable to reset password. Please try again or request a new reset link.";
@@ -56,25 +67,16 @@ const ResetPassword = () => {
   };
 
   const validate = () => {
+    const parsed = resetSchema.safeParse(form);
     const newErrors = {};
 
-    if (!form.email.trim()) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(form.email))
-      newErrors.email = "Please enter a valid email";
-
-    if (!form.otp.trim()) newErrors.otp = "OTP is required";
-    else if (form.otp.length !== 6)
-      newErrors.otp = "OTP must be exactly 6 digits";
-
-    if (!form.newPassword)
-      newErrors.newPassword = "New password is required";
-    else if (form.newPassword.length < 8)
-      newErrors.newPassword = "Password must be at least 8 characters";
-
-    if (!form.confirmPassword)
-      newErrors.confirmPassword = "Please confirm your password";
-    else if (form.newPassword !== form.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match";
+    if (!parsed.success) {
+      parsed.error.issues.forEach((issue) => {
+        if (!newErrors[issue.path[0]]) {
+          newErrors[issue.path[0]] = issue.message;
+        }
+      });
+    }
 
     return newErrors;
   };

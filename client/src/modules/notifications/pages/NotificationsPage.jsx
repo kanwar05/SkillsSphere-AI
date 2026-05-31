@@ -9,6 +9,8 @@ import {
   Filter,
 } from "lucide-react";
 import Navbar from "../../../shared/landing/Navbar";
+import Footer from "../../../modules/landing/components/Footer";
+
 import NotificationCard from "../components/NotificationCard";
 import useNotifications from "../hooks/useNotifications";
 import { useSelector } from "react-redux";
@@ -330,6 +332,7 @@ const NotificationsPage = () => {
           </div>
         )}
       </main>
+          <Footer />
     </div>
   );
 };

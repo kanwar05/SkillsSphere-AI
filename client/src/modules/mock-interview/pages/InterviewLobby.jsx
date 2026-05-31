@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../../../shared/landing/Navbar";
+import Footer from "../../../modules/landing/components/Footer";
+
 import CameraCheck from "../components/CameraCheck";
 import PersonaSelector from "../components/PersonaSelector";
 import Button from "../../../shared/components/Button";
@@ -79,7 +81,7 @@ const InterviewLobby = () => {
 
       <Navbar />
 
-      <main className="relative z-10 pt-28 pb-12 max-w-[1200px] mx-auto px-4 sm:px-8 min-h-[calc(100vh-80px)] flex flex-col gap-10">
+      <main className="relative z-10 pt-8 pb-12 max-w-[1200px] mx-auto px-4 sm:px-8 min-h-[calc(100vh-80px)] flex flex-col gap-10">
         
         {/* Header Section */}
         <header className="text-center mb-2 animate-[fadeIn_0.8s_ease-out]">
@@ -216,6 +218,7 @@ const InterviewLobby = () => {
 
         </div>
       </main>
+          <Footer />
     </div>
   );
 };

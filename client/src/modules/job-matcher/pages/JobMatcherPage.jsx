@@ -3,6 +3,8 @@ import { useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { Sparkles, FileUp, AlertCircle, Briefcase, ArrowLeft } from "lucide-react";
 import Navbar from "../../../shared/landing/Navbar";
+import Footer from "../../../modules/landing/components/Footer";
+
 import LoadingState from "../../../shared/components/LoadingState";
 import { JobViewerCard, Pagination } from "../../../shared/components";
 import JobApplyForm from "../../student-jobs/components/JobApplyForm";
@@ -82,8 +84,6 @@ export default function JobMatcherPage() {
     <main className="min-h-screen bg-[var(--background)] dark:bg-[radial-gradient(circle_at_top_left,#0f172a,#020617)] text-gray-900 dark:text-slate-100 flex flex-col pt-24">
       <Navbar />
 
-      {/* Spacer for fixed navbar */}
-      <div className="h-32 md:h-40 shrink-0"></div>
 
       <div className="container mx-auto px-4 pb-12 flex-1">
         {/* Header */}
@@ -147,8 +147,8 @@ export default function JobMatcherPage() {
               {message || "No suitable jobs found matching your profile yet. Check back as new positions are posted!"}
             </p>
             <button
-              onClick={() => navigate("/job-board")}
-              className="px-8 py-3 bg-gray-200 dark:bg-slate-800 hover:bg-gray-300 dark:hover:bg-slate-700 text-gray-700 dark:text-white font-bold rounded-xl transition-colors border border-gray-300 dark:border-white/10"
+              onClick={() => navigate("/jobs")}
+              className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-colors border border-white/10"
             >
               Browse All Jobs
             </button>
@@ -201,7 +201,7 @@ export default function JobMatcherPage() {
             {/* Browse all jobs link */}
             <div className="mt-10 text-center">
               <button
-                onClick={() => navigate("/job-board")}
+                onClick={() => navigate("/jobs")}
                 className="text-sm text-slate-500 hover:text-blue-400 transition-colors font-medium"
               >
                 ← Browse all job listings
@@ -221,6 +221,7 @@ export default function JobMatcherPage() {
           isSubmitting={!!applyingJobId}
         />
       )}
+          <Footer />
     </main>
   );
 }

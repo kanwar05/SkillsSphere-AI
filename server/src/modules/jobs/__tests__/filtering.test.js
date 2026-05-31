@@ -9,9 +9,14 @@ import mongoose from "mongoose";
 describe("Job Service Filtering", () => {
   const mockJobId = new mongoose.Types.ObjectId();
   const mockRecruiterId = "recruiter123";
+  let savedDistinct;
 
   afterEach(() => {
     mock.restoreAll();
+    if (savedDistinct !== undefined) {
+      JobApplication.distinct = savedDistinct;
+      savedDistinct = undefined;
+    }
   });
 
   it("should filter applications by minScore and maxScore correctly", async () => {
@@ -190,6 +195,9 @@ describe("Job Service Filtering", () => {
     mockQuery.then = function(resolve) { resolve(mockApps); };
     mock.method(JobApplication, "find", () => mockQuery);
     mock.method(JobApplication, "countDocuments", async () => 1);
+    savedDistinct = JobApplication.distinct;
+    JobApplication.distinct = async () => [resumeId1, resumeId2];
+    mock.method(JobApplication, "distinct", async () => [resumeId1, resumeId2]);
 
     const filters = { specialization: "frontend" };
     const result = await jobService.getJobApplications(mockJobId, mockRecruiterId, filters);

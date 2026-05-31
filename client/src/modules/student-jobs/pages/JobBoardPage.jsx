@@ -3,6 +3,8 @@ import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { Briefcase, Info, ArrowLeft } from "lucide-react";
 import Navbar from "../../../shared/landing/Navbar";
+import Footer from "../../../modules/landing/components/Footer";
+
 import ErrorState from "../../../shared/components/ErrorState";
 import EmptyState from "../../../shared/components/EmptyState";
 import { JobViewerCard, Pagination } from "../../../shared/components";
@@ -93,11 +95,10 @@ const JobBoardPage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-white dark:bg-[radial-gradient(circle_at_top_left,#0f172a,#020617)] text-gray-900 dark:text-slate-100 flex flex-col">
+    <main className="min-h-screen bg-white dark:bg-[radial-gradient(circle_at_top_left,#0f172a,#020617)] text-gray-900 dark:text-slate-100 flex flex-col pt-24">
       <Navbar />
       
-      {/* Spacer to push content below the fixed Navbar */}
-      <div className="h-32 md:h-40 shrink-0"></div>
+
       
       <div className="container mx-auto px-4 pb-12 flex-1">
         {/* Header Section */}
@@ -201,6 +202,7 @@ const JobBoardPage = () => {
           isSubmitting={!!applyingJobId}
         />
       )}
+          <Footer />
     </main>
   );
 };

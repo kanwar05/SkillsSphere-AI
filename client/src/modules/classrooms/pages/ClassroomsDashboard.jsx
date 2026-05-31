@@ -9,6 +9,8 @@ import {
   getActiveClassroomSessions,
 } from "../services/classroomService";
 import Navbar from "../../../shared/landing/Navbar";
+import Footer from "../../../modules/landing/components/Footer";
+
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 
 export default function ClassroomsDashboard() {
@@ -133,9 +135,9 @@ export default function ClassroomsDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#020617] text-gray-900 dark:text-white pt-24 pb-16 px-6">
+    <div className="min-h-screen bg-white dark:bg-[#020617] text-gray-900 dark:text-white flex flex-col">
       <Navbar />
-      <div className="max-w-6xl mx-auto">
+      <div className="flex-1 max-w-6xl mx-auto w-full pt-24 pb-16 px-6">
         
         {/* Header section */}
         <div className="text-center mb-12">
@@ -484,7 +486,7 @@ export default function ClassroomsDashboard() {
                                 />
                               ) : (
                                 <div className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-[10px] font-bold border border-indigo-500/10">
-                                  {session.host.name?.charAt(0).toUpperCase()}
+                                  {session.host.name?.charAt(0)?.toUpperCase()}
                                 </div>
                               )}
                               <span className="text-xs text-gray-600 dark:text-slate-400">
@@ -518,6 +520,7 @@ export default function ClassroomsDashboard() {
         </div>
 
       </div>
+          <Footer />
     </div>
   );
 }

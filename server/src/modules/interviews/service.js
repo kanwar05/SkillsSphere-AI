@@ -453,7 +453,7 @@ export const getTutorSessionsList = async (tutorId, page, limit) => {
       .skip(skip)
       .limit(limit)
       .lean(),
-    InterviewSession.countDocuments({ status: 'completed' }),
+    InterviewSession.countDocuments({ userId: { $in: studentIds }, status: 'completed' }),
   ]);
   return { sessions, total, page, pages: Math.ceil(total / limit) };
 };

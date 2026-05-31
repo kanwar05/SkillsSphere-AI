@@ -7,7 +7,13 @@ import Button from "../../shared/components/Button";
 import { useToast } from "../../shared/components";
 import Navbar from "../../shared/landing/Navbar";
 import { API_URL } from "../../config/env";
+import { z } from "zod";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+
+const loginSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Please enter a valid email"),
+  password: z.string().min(1, "Password is required"),
+});
 
 const Login = () => {
   useDocumentTitle("Login");
@@ -36,19 +42,21 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    let newErrors = {};
-
-    if (!form.email) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(form.email))
-      newErrors.email = "Please enter a valid email";
-    if (!form.password) newErrors.password = "Password is required";
-
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) {
+    
+    const parsed = loginSchema.safeParse(form);
+    if (!parsed.success) {
+      const newErrors = {};
+      parsed.error.issues.forEach((issue) => {
+        if (!newErrors[issue.path[0]]) {
+          newErrors[issue.path[0]] = issue.message;
+        }
+      });
+      setErrors(newErrors);
       warning("Please fix the highlighted login fields before continuing.");
       return;
     }
+
+    setErrors({});
 
     const resultAction = await dispatch(
       loginUser({

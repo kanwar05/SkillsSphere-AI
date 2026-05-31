@@ -43,10 +43,13 @@ const TutorInterviewsList = lazy(() => import("../modules/mock-interview/pages/T
 const TutorAnalyticsDashboard = lazy(() => import("../modules/analytics/TutorAnalyticsDashboard"));
 const NotificationsPage = lazy(() => import("../modules/notifications/pages/NotificationsPage"));
 const ChatWidget = lazy(() => import("../modules/ai-assistant/components/ChatWidget"));
+const NotFoundPage = lazy(() => import("../modules/landing/pages/NotFoundPage"));
 import ProtectedRoute from "../shared/components/ProtectedRoute";
 import SocketNotificationListener from "../shared/components/SocketNotificationListener";
 import ScrollToTop from "../shared/components/ScrollToTop";
-import { LoadingState } from "../shared/components";
+import { LoadingState, ErrorBoundary } from "../shared/components";
+import CommandPalette from "../shared/components/CommandPalette";
+
 function App() {
   const dispatch = useDispatch();
   const { token } = useSelector((state) => state.auth);
@@ -73,8 +76,10 @@ function App() {
     <div className="min-h-screen bg-[var(--background)] text-[var(--text-main)] transition-colors duration-300">
       <ScrollToTop />
       <SocketNotificationListener />
+      <CommandPalette />
 
-      <Suspense fallback={<LoadingState title="Loading module..." />}>
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingState title="Loading module..." />}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         
@@ -306,9 +311,17 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
+        {/* Catch-all 404 Route */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       </Suspense>
-      {token && <ChatWidget />}
+      </ErrorBoundary>
+      {token && (
+        <Suspense fallback={null}>
+          <ChatWidget />
+        </Suspense>
+      )}
     </div>
   );
 }

@@ -82,15 +82,17 @@ export const evaluateMatches = async (user, resume, preFilteredJobs = null) => {
   // If a candidate matches poorly (< 60%), generate alerts for Tutors and Recruiters
   const io = getIO();
   
-  // Find a tutor outside the transaction and loop
-  const tutor = await User.findOne({ role: "tutor" });
-  
   const session = await mongoose.startSession();
-  session.startTransaction();
+session.startTransaction();
 
-  try {
-    const notificationsToEmit = [];
-    const notificationDocs = [];
+try {
+  // Find tutor inside transaction with consistent sort
+  const tutor = await User.findOne({ role: "tutor" })
+    .sort({ createdAt: 1 })
+    .session(session);
+
+  const notificationsToEmit = [];
+  const notificationDocs = [];
 
     for (const rec of recommendations) {
       if (rec.score > 0 && rec.score < 60) {

@@ -10,6 +10,8 @@ import {
   getSkillTrends,
 } from "../services/dashboardService";
 import { getRecruiterJobs } from "../../recruiter-jobs/services/jobPostingService";
+import Footer from "../../../modules/landing/components/Footer";
+
 
 vi.mock("../services/dashboardService", () => ({
   getAnalysisHistory: vi.fn(),
@@ -71,7 +73,8 @@ vi.mock("recharts", () => ({
   CartesianGrid: () => null,
   Tooltip: () => null,
   BarChart: ({ children }) => <div>{children}</div>,
-  Bar: ({ children }) => <div>{children}</div>,
+  Bar: ({ children }) => <div>{children}      <Footer />
+    </div>,
   Cell: () => null,
 }));
 

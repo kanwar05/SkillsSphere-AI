@@ -7,6 +7,8 @@ import { MemoryRouter } from 'react-router-dom'
 import CreateJobPostingPage from '../CreateJobPostingPage'
 import * as jobPostingService from '../../services/jobPostingService'
 import { ToastProvider } from '../../../../shared/components'
+import Footer from "../../../../modules/landing/components/Footer";
+
 
 // Mock the service
 vi.mock('../../services/jobPostingService', () => ({
@@ -52,6 +54,7 @@ vi.mock('../../../../shared/components/Select', () => ({
           </option>
         ))}
       </select>
+          <Footer />
     </div>
   ),
 }))

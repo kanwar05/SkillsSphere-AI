@@ -18,6 +18,8 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Navbar from "../../../shared/landing/Navbar";
+import Footer from "../../../modules/landing/components/Footer";
+
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 import logger from "../../../utils/logger";
 
@@ -331,6 +333,7 @@ const InterviewResults = () => {
           Back to Dashboard
         </button>
       </div>
+          <Footer />
     </div>
   );
 };

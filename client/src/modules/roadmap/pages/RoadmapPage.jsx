@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { CheckCircle2, Circle, Clock, Rocket, Target, Award, Star, MessageSquare } from "lucide-react";
 import Navbar from "../../../shared/landing/Navbar";
+import Footer from "../../../modules/landing/components/Footer";
+
 import { getMyRoadmap, updateTopicStatus } from "../services/roadmapService";
 import { LoadingState, useToast } from "../../../shared/components";
 import ContributionSummaryCard from "../components/ContributionSummaryCard";
@@ -44,6 +46,12 @@ const RoadmapPage = () => {
       if (response.success) {
         setRoadmap(response.data);
         showSuccess(`Milestone marked as ${nextStatus === "completed" ? "Completed" : "In Progress"}.`);
+        
+        if (response.newBadges && response.newBadges.length > 0) {
+          response.newBadges.forEach(badge => {
+            showSuccess(`🏅 Achievement Unlocked: ${badge}!`);
+          });
+        }
       }
     } catch (err) {
       logger.error("Update failed:", err);
@@ -78,7 +86,7 @@ const RoadmapPage = () => {
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--text-main)] font-sans pt-24">
       <Navbar />
-      <div className="max-w-4xl mx-auto pt-32 pb-20 px-4">
+      <div className="max-w-4xl mx-auto pt-8 pb-20 px-4">
         {/* Header section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 animate-slide-up">
           <div>
@@ -107,6 +115,15 @@ const RoadmapPage = () => {
               <div>
                 <p className="text-xs font-bold text-text-muted uppercase">Overall Readiness</p>
                 <p className="text-lg font-black">{roadmap.overallProgress === 100 ? "Job Ready!" : "In Progress"}</p>
+                {roadmap.achievements && roadmap.achievements.length > 0 && (
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    {roadmap.achievements.map((ach, i) => (
+                      <div key={i} title={ach.badge} className="w-6 h-6 rounded-full bg-yellow-400/20 flex items-center justify-center border border-yellow-400/40 shadow-[0_0_10px_rgba(250,204,21,0.3)] cursor-help hover:scale-110 transition-transform">
+                        <Award className="w-3.5 h-3.5 text-yellow-500" />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -257,6 +274,7 @@ const RoadmapPage = () => {
           currentUser={user}
         />
       )}
+          <Footer />
     </div>
   );
 };

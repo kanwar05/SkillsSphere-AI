@@ -17,6 +17,7 @@ const validBaseEnv = {
   GOOGLE_CLIENT_SECRET: "google-oauth-client-secret",
   GOOGLE_CALLBACK_URL: "https://api.skillssphere.ai/api/auth/google/callback",
   MONGO_URI: "mongodb+srv://user:pass@cluster0.mongodb.net/skillssphere",
+  FILE_URL_SIGNING_SECRET: "Str0ngFileSigningSecretValue32Chars!",
 };
 
 test("validateRequiredEnv reports missing required environment variables", () => {

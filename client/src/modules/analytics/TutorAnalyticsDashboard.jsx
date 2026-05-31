@@ -5,6 +5,8 @@ import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../../services/apiClient.js";
 import Navbar from "../../shared/landing/Navbar";
+import Footer from "../../modules/landing/components/Footer";
+
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 
@@ -90,9 +92,10 @@ const TutorAnalyticsDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 px-6 pb-6 pt-24 sm:px-10 sm:pb-10 sm:pt-28">
-      
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
+      <Navbar />
+      <div className="flex-1 px-6 pb-6 pt-24 sm:px-10 sm:pb-10">
+        <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Header Section */}
         <div>
@@ -170,6 +173,8 @@ const TutorAnalyticsDashboard = () => {
 
         </div>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 };

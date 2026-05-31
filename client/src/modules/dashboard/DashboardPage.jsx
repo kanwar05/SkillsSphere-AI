@@ -6,6 +6,8 @@ import { LogOut, Menu, User, FileText, Target, Briefcase, Video, BadgeCheck, Spa
 import { logout } from "../../features/auth/authSlice";
 import Button from "../../shared/components/Button";
 import Navbar from "../../shared/landing/Navbar";
+import Footer from "../../modules/landing/components/Footer";
+
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 import StudentDashboard from "./components/dashboards/StudentDashboard";
@@ -60,7 +62,8 @@ const DashboardPage = () => {
   };
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-[#d8dde5] px-3 pb-6 pt-20 text-gray-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 sm:pb-8 sm:pt-24">
+    <main className="relative min-h-screen w-full overflow-hidden bg-[#d8dde5] text-gray-900 dark:bg-slate-950 dark:text-slate-100 flex flex-col">
+      <div className="flex-1 px-3 pb-6 pt-20 sm:px-6 sm:pb-8 sm:pt-24 w-full">
       <div className="pointer-events-none absolute -left-28 top-12 h-72 w-72 rounded-full bg-emerald-400/30 blur-3xl dark:bg-emerald-500/20" />
       <div className="pointer-events-none absolute -right-24 top-28 h-80 w-80 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
       <div className="pointer-events-none absolute bottom-8 left-1/3 h-72 w-72 rounded-full bg-gradient-to-br from-emerald-400/20 to-violet-400/20 blur-3xl dark:from-emerald-500/15 dark:to-violet-500/15" />
@@ -184,6 +187,8 @@ const DashboardPage = () => {
           </div>
         </div>
       </div>
+      </div>
+      <Footer />
     </main>
   );
 };
