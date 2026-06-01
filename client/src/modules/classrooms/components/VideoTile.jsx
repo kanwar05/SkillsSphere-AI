@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { Hand, MicOff, VideoOff } from "lucide-react";
-export default function VideoTile({ stream, user, isMuted, isHandRaised, isScreenShare, isLocal }) {
+export default function VideoTile({ stream, user, isMuted, isHandRaised, isScreenShare, isVideoOff, isLocal }) {
   const videoRef = useRef();
 
   useEffect(() => {
@@ -39,8 +39,14 @@ export default function VideoTile({ stream, user, isMuted, isHandRaised, isScree
           {user?.name || "Participant"} {isLocal ? "(You)" : ""}
         </span>
         {isMuted && <MicOff size={14} className="text-red-400" />}
-        {!stream && <VideoOff size={14} className="text-red-400" />}
+        {(isVideoOff || !stream) && <VideoOff size={14} className="text-red-400" />}
       </div>
+
+      {isScreenShare && (
+        <div className="absolute top-3 left-3 bg-blue-500/80 text-white px-2 py-1 text-xs font-semibold rounded border border-blue-400 shadow-lg backdrop-blur-sm z-10">
+          Screen Share
+        </div>
+      )}
 
       {isHandRaised && (
         <div className="absolute top-3 right-3 bg-yellow-500/20 text-yellow-400 p-2 rounded-lg border border-yellow-500/30 shadow-lg backdrop-blur-sm animate-pulse">

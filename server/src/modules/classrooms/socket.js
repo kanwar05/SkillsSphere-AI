@@ -157,6 +157,24 @@ export function initClassroomSockets(io) {
       });
     });
 
+    // Toggle Mute
+    socket.on("toggle-mute", ({ roomId, isMuted }) => {
+      if (!socket.data || socket.data.roomId !== roomId) return;
+      socket.to(roomId).emit("mute-toggled", { socketId: socket.id, isMuted });
+    });
+
+    // Toggle Video
+    socket.on("toggle-video", ({ roomId, isVideoOff }) => {
+      if (!socket.data || socket.data.roomId !== roomId) return;
+      socket.to(roomId).emit("video-toggled", { socketId: socket.id, isVideoOff });
+    });
+
+    // Toggle Screen Share
+    socket.on("toggle-screen-share", ({ roomId, isScreenSharing }) => {
+      if (!socket.data || socket.data.roomId !== roomId) return;
+      socket.to(roomId).emit("screen-share-toggled", { socketId: socket.id, isScreenSharing });
+    });
+
     // WebRTC Signaling Events
     socket.on("webrtc-offer", ({ targetSocketId, offer }) => {
       // Validate that the requesting socket is in a room

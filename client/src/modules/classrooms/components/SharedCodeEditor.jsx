@@ -5,10 +5,16 @@ import { useToast } from "../../../shared/components/toast/ToastProvider";
 
 import logger from "../../../utils/logger";
 
-export default function SharedCodeEditor({ socket, roomId, userRole }) {
+export default function SharedCodeEditor({ socket, roomId, userRole, initialCode }) {
   const { success } = useToast();
-  const [code, setCode] = useState(`// Welcome to SkillSphere AI Live Coding Classroom!\n// Type your collaborative code here...\n\nfunction helloWorld() {\n  logger.log("Welcome to class!");\n}`);
+  const [code, setCode] = useState(initialCode || `// Welcome to SkillSphere AI Live Coding Classroom!\n// Type your collaborative code here...\n\nfunction helloWorld() {\n  logger.log("Welcome to class!");\n}`);
   const [language, setLanguage] = useState("javascript");
+
+  useEffect(() => {
+    if (initialCode) {
+      setCode(initialCode);
+    }
+  }, [initialCode]);
   const [lastEditorInfo, setLastEditorInfo] = useState("");
   const [isExecuting, setIsExecuting] = useState(false);
   const [executionResult, setExecutionResult] = useState(null); // { output, isError, senderName }

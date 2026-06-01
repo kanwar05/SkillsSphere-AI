@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Trash2, Eraser, Edit2 } from "lucide-react";
-export default function Whiteboard({ socket, roomId, userRole }) {
+export default function Whiteboard({ socket, roomId, userRole, initialStrokes }) {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState("#38bdf8"); // Neon Blue default
@@ -57,6 +57,17 @@ export default function Whiteboard({ socket, roomId, userRole }) {
       socket.on("clear-canvas", () => {
         clearLocalCanvas();
       });
+    }
+
+    if (initialStrokes && initialStrokes.length > 0) {
+      // Small timeout to ensure canvas is fully mounted and sized before drawing
+      setTimeout(() => {
+        initialStrokes.forEach((strokeData) => {
+          // Wrap drawRemoteStroke logic locally here if it needs ctx access,
+          // but drawRemoteStroke creates its own context so it's safe.
+          drawRemoteStroke(strokeData.strokeData || strokeData);
+        });
+      }, 50);
     }
 
     return () => {
