@@ -49,6 +49,7 @@ import resumeRoutes from "./src/modules/resumes/routes.js";
 import roadmapRoutes from "./src/modules/roadmap/routes.js";
 import { initRoadmapSockets } from "./src/modules/roadmap/socket.js";
 import userRoutes from "./src/modules/users/routes.js";
+import aiAssistantRoutes from "./src/modules/ai-assistant/routes.js";
 import { setIO } from "./src/utils/socketIO.js";
 import attachSocketRateLimiter from "./src/middleware/socketRateLimiter.js";
 
@@ -137,46 +138,13 @@ await connectDB();
 await connectRedis();
 logEvaluatorConfig();
 
-// Initialize Gemini AI client once at startup (not per-request)
-let geminiModel = null;
-if (process.env.GEMINI_API_KEY) {
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-}
+// Initialize Gemini AI client logic moved to src/modules/ai-assistant/controller.js
 
 app.get("/health", (req, res) => {
   res.json({ status: "OK", db: isConnected ? "connected" : "disconnected" });
 });
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-app.post("/api/chat", async (req, res) => {
-  try {
-    const { message } = req.body;
-    if (!message) {
-      return res.status(400).json({ error: "Message required" });
-    }
-
-    if (!geminiModel) {
-      return res.status(503).json({
-        error:
-          "AI service is currently unconfigured. Please set GEMINI_API_KEY in .env",
-      });
-    }
-
-    const prompt = `You are the "SkillsSphere Career Assistant", an expert AI specializing in tech careers, resumes, recruitment, and technical interviews. 
-Keep your answers concise, helpful, and professional. If the user asks something completely unrelated to careers or the platform, politely decline to answer.
-User message: ${message}`;
-
-    const result = await geminiModel.generateContent(prompt);
-    const reply = result.response.text();
-
-    res.json({ reply });
-  } catch (error) {
-    logger.error("Chat API error:", error);
-    res.status(500).json({ error: "Failed to generate AI response" });
-  }
-});
 
 app.use("/api/auth", requireDB, authRoutes);
 app.use("/api/resume", requireDB, resumeRoutes);
@@ -193,6 +161,7 @@ app.use("/api/files", requireDB, fileRoutes);
 app.use("/api/notifications", requireDB, notificationRoutes);
 app.use("/api/analytics", requireDB, analyticsRoutes);
 app.use("/api/recruiter", requireDB, recruiterRoutes);
+app.use("/api/chat", requireDB, aiAssistantRoutes);
 
 initClassroomSockets(io);
 initNotificationSockets(io);

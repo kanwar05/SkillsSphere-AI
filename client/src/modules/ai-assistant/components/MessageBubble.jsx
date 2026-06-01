@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 const MessageBubble = ({ sender, text }) => {
   const isUser = sender === "user";
@@ -27,8 +28,27 @@ const MessageBubble = ({ sender, text }) => {
             <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-slate-400 animate-bounce [animation-delay:150ms]" />
             <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-slate-400 animate-bounce [animation-delay:300ms]" />
           </div>
+        ) : isUser ? (
+          <span className="whitespace-pre-wrap">{text}</span>
         ) : (
-          text
+          <div className="prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-pre:bg-slate-800 prose-pre:text-slate-100 prose-a:text-violet-500 hover:prose-a:text-violet-600 max-w-none">
+            <ReactMarkdown
+              components={{
+                p: ({ node, ...props }) => <p className="m-0 mb-2 last:mb-0" {...props} />,
+                ul: ({ node, ...props }) => <ul className="m-0 pl-4 mb-2 last:mb-0 list-disc" {...props} />,
+                ol: ({ node, ...props }) => <ol className="m-0 pl-4 mb-2 last:mb-0 list-decimal" {...props} />,
+                li: ({ node, ...props }) => <li className="m-0" {...props} />,
+                code: ({ node, inline, ...props }) =>
+                  inline ? (
+                    <code className="bg-slate-200 dark:bg-slate-700 px-1 py-0.5 rounded text-[13px]" {...props} />
+                  ) : (
+                    <code {...props} />
+                  ),
+              }}
+            >
+              {text}
+            </ReactMarkdown>
+          </div>
         )}
       </div>
     </div>

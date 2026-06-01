@@ -109,7 +109,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Intercept queries on email to transparently encrypt them so exact matches still work
-userSchema.pre(["find", "findOne", "countDocuments", "findOneAndUpdate", "updateOne"], function (next) {
+userSchema.pre(["find", "findOne", "countDocuments", "findOneAndUpdate", "updateOne"], function () {
   const query = this.getQuery();
   if (query && query.email) {
     if (typeof query.email === "string" && !query.email.startsWith("v1:cbc:")) {
@@ -120,7 +120,6 @@ userSchema.pre(["find", "findOne", "countDocuments", "findOneAndUpdate", "update
       );
     }
   }
-  next();
 });
 
 const User = mongoose.model("User", userSchema);
