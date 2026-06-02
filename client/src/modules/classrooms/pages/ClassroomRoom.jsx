@@ -41,6 +41,9 @@ export default function ClassroomRoom() {
   const [activeTab, setActiveTab] = useState("chat"); // 'chat' or 'participants'
   const [activeWorkspace, setActiveWorkspace] = useState("video"); // 'video', 'whiteboard', or 'code'
 
+  const [initialCode, setInitialCode] = useState("");
+  const [initialWhiteboard, setInitialWhiteboard] = useState([]);
+
   // Controls state
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
@@ -98,9 +101,18 @@ export default function ClassroomRoom() {
               stream: null, // Will be populated on peer 'stream' event
               isHandRaised: false,
               isMuted: false,
+              isVideoOff: false,
+              isScreenShare: false,
             });
           });
           setPeers(peersArr);
+        });
+
+        // Handle initial room state synchronization for late joiners
+        s.on("sync-state", (state) => {
+          if (state.chatHistory) setChatMessages(state.chatHistory);
+          if (state.code) setInitialCode(state.code);
+          if (state.whiteboard) setInitialWhiteboard(state.whiteboard);
         });
 
         // Handle incoming user (they just joined, they will initiate the call to us)
@@ -134,6 +146,8 @@ export default function ClassroomRoom() {
             stream: null,
             isHandRaised: false,
             isMuted: false,
+            isVideoOff: false,
+            isScreenShare: false,
           };
 
           peersRef.current.push(newPeerObj);
@@ -182,6 +196,30 @@ export default function ClassroomRoom() {
           setPeers((prev) =>
             prev.map((p) =>
               p.peerId === socketId ? { ...p, isHandRaised: isRaised } : p,
+            ),
+          );
+        });
+
+        s.on("mute-toggled", ({ socketId, isMuted }) => {
+          setPeers((prev) =>
+            prev.map((p) =>
+              p.peerId === socketId ? { ...p, isMuted } : p,
+            ),
+          );
+        });
+
+        s.on("video-toggled", ({ socketId, isVideoOff }) => {
+          setPeers((prev) =>
+            prev.map((p) =>
+              p.peerId === socketId ? { ...p, isVideoOff } : p,
+            ),
+          );
+        });
+
+        s.on("screen-share-toggled", ({ socketId, isScreenSharing }) => {
+          setPeers((prev) =>
+            prev.map((p) =>
+              p.peerId === socketId ? { ...p, isScreenShare: isScreenSharing } : p,
             ),
           );
         });
@@ -277,8 +315,12 @@ export default function ClassroomRoom() {
     if (localStream) {
       const audioTrack = localStream.getAudioTracks()[0];
       if (audioTrack) {
-        audioTrack.enabled = !audioTrack.enabled;
-        setIsMuted(!audioTrack.enabled);
+        const newState = !audioTrack.enabled;
+        audioTrack.enabled = newState;
+        setIsMuted(!newState);
+        if (socket) {
+          socket.emit("toggle-mute", { roomId, isMuted: !newState });
+        }
       }
     }
   };
@@ -287,8 +329,12 @@ export default function ClassroomRoom() {
     if (localStream) {
       const videoTrack = localStream.getVideoTracks()[0];
       if (videoTrack) {
-        videoTrack.enabled = !videoTrack.enabled;
-        setIsVideoOff(!videoTrack.enabled);
+        const newState = !videoTrack.enabled;
+        videoTrack.enabled = newState;
+        setIsVideoOff(!newState);
+        if (socket) {
+          socket.emit("toggle-video", { roomId, isVideoOff: !newState });
+        }
       }
     }
   };
@@ -322,6 +368,9 @@ export default function ClassroomRoom() {
 
     setLocalStream(localStreamRef.current);
     setIsScreenSharing(false);
+    if (socket) {
+      socket.emit("toggle-screen-share", { roomId, isScreenSharing: false });
+    }
   };
 
   const toggleScreenShare = async () => {
@@ -357,6 +406,9 @@ export default function ClassroomRoom() {
 
         setLocalStream(stream);
         setIsScreenSharing(true);
+        if (socket) {
+          socket.emit("toggle-screen-share", { roomId, isScreenSharing: true });
+        }
       } catch (err) {
         logger.error("Failed to share screen", err);
       }
@@ -447,6 +499,8 @@ export default function ClassroomRoom() {
                       isLocal={false}
                       isMuted={peerObj.isMuted}
                       isHandRaised={peerObj.isHandRaised}
+                      isVideoOff={peerObj.isVideoOff}
+                      isScreenShare={peerObj.isScreenShare}
                     />
                   </div>
                 ))}
@@ -464,6 +518,8 @@ export default function ClassroomRoom() {
                     isLocal={true}
                     isMuted={isMuted}
                     isHandRaised={isHandRaised}
+                    isVideoOff={isVideoOff}
+                    isScreenShare={isScreenSharing}
                   />
                   {peers.map((peerObj, index) => (
                     <VideoTile
@@ -473,6 +529,8 @@ export default function ClassroomRoom() {
                       isLocal={false}
                       isMuted={peerObj.isMuted}
                       isHandRaised={peerObj.isHandRaised}
+                      isVideoOff={peerObj.isVideoOff}
+                      isScreenShare={peerObj.isScreenShare}
                     />
                   ))}
                 </div>
@@ -483,6 +541,7 @@ export default function ClassroomRoom() {
                   socket={socket}
                   roomId={roomId}
                   userRole={user?.role}
+                  initialStrokes={initialWhiteboard}
                 />
               )}
 
@@ -491,6 +550,7 @@ export default function ClassroomRoom() {
                   socket={socket}
                   roomId={roomId}
                   userRole={user?.role}
+                  initialCode={initialCode}
                 />
               )}
             </div>

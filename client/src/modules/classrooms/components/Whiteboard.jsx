@@ -12,7 +12,7 @@ import {
   Minus
 } from "lucide-react";
 
-export default function Whiteboard({ socket, roomId, userRole }) {
+export default function Whiteboard({ socket, roomId, userRole, initialStrokes }) {
   const canvasRef = useRef(null);
   
   // State for canvas configuration and tool selections
@@ -206,6 +206,17 @@ export default function Whiteboard({ socket, roomId, userRole }) {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       });
+    }
+
+    if (initialStrokes && initialStrokes.length > 0) {
+      // Small timeout to ensure canvas is fully mounted and sized before drawing
+      setTimeout(() => {
+        initialStrokes.forEach((strokeData) => {
+          // Wrap drawRemoteStroke logic locally here if it needs ctx access,
+          // but drawRemoteStroke creates its own context so it's safe.
+          drawRemoteStroke(strokeData.strokeData || strokeData);
+        });
+      }, 50);
     }
 
     return () => {
