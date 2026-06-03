@@ -43,21 +43,39 @@ const TutorInterviewsList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-[#09090b] text-gray-900 dark:text-text-main font-sans pt-20 flex flex-col overflow-hidden relative">
       <Navbar />
-      <div className="flex-1 px-6 pb-6 pt-24 sm:px-10 sm:pb-10">
-        <div className="max-w-6xl mx-auto space-y-8">
-        <div>
-          <Link 
-            to="/dashboard" 
-            className="inline-flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-500 mb-4 transition-colors"
-          >
-            <ArrowLeft size={16} />
-            Back to Dashboard
-          </Link>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Student Mock Interviews</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2">Review completed AI mock interviews and provide manual feedback.</p>
+
+      <main className="flex-grow flex flex-col items-center justify-start px-4 sm:px-6 lg:px-8 pb-12 animate-fade-in relative overflow-hidden w-full">
+        {/* Background glow effects */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+          <div className="absolute -top-[10%] -left-[5%] w-[40%] h-[40%] rounded-full bg-blue-100/40 dark:bg-blue-900/10 blur-[120px]" />
+          <div className="absolute top-[20%] -right-[5%] w-[35%] h-[35%] rounded-full bg-purple-100/40 dark:bg-purple-900/10 blur-[100px]" />
+          <div className="absolute top-[5%] right-[20%] w-[35%] h-[35%] rounded-full bg-teal-50/40 dark:bg-teal-900/10 blur-[100px]" />
         </div>
+
+        <div className="w-full max-w-[1200px] relative z-10 flex flex-col gap-6">
+          
+          {/* Back to Dashboard Link */}
+          <div className="py-6 mt-[-1rem]">
+            <Link 
+              to="/dashboard" 
+              className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+            >
+              <ArrowLeft size={16} />
+              Back to Dashboard
+            </Link>
+          </div>
+
+          {/* Header Section */}
+          <header className="mb-8 text-center max-w-3xl mx-auto relative pt-4 animate-[fadeIn_0.8s_ease-out]">
+            <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-6 drop-shadow-sm leading-tight">
+              <span className="text-blue-600 dark:text-blue-500">Student</span> Mock Interviews
+            </h1>
+            <p className="text-gray-500 dark:text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed">
+              Review completed AI mock interviews and provide manual feedback.
+            </p>
+          </header>
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
           {sessions.length === 0 ? (
@@ -127,8 +145,8 @@ const TutorInterviewsList = () => {
             </div>
           )}
         </div>
-      </div>
-      </div>
+        </div>
+      </main>
       <Footer />
     </div>
   );
