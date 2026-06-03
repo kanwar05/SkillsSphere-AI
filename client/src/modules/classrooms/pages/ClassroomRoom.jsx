@@ -22,6 +22,7 @@ import { io } from "socket.io-client";
 import SharedCodeEditor from "../components/SharedCodeEditor";
 import VideoTile from "../components/VideoTile";
 import Whiteboard from "../components/Whiteboard";
+import { endClassroomSession } from "../services/classroomService";
 
 import { SOCKET_URL } from "../../../config/env";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
@@ -81,6 +82,12 @@ export default function ClassroomRoom() {
         s.emit("join-room", {
           roomId,
           user: { id: user._id, name: user.name || user.email },
+        });
+
+        // Listen for graceful session termination
+        s.on("session-ended", () => {
+          toast.error("The host has ended this live classroom session.");
+          navigate("/classrooms");
         });
 
         // When we get the current participants list, we act as the "caller" and initiate peer connections
@@ -434,8 +441,26 @@ export default function ClassroomRoom() {
     setChatInput("");
   };
 
-  const handleLeave = () => {
-    navigate("/classrooms");
+  const handleLeave = async () => {
+    if (user?.role === "tutor") {
+      const choice = window.confirm("Tutors: Click OK to END the session for everyone, or Cancel to just Leave.");
+      if (choice) {
+        try {
+          await endClassroomSession(roomId, token);
+          toast.success("Session ended successfully.");
+          navigate("/classrooms");
+        } catch (err) {
+          logger.error("Failed to end session", err);
+          toast.error("Failed to end session.");
+        }
+      } else {
+        navigate("/classrooms");
+      }
+    } else {
+      if (window.confirm("Are you sure you want to leave the classroom?")) {
+        navigate("/classrooms");
+      }
+    }
   };
 
   const copyRoomId = () => {
@@ -621,7 +646,7 @@ export default function ClassroomRoom() {
               className="p-4 rounded-full bg-red-600 hover:bg-red-700 transition-all text-white px-8 font-bold flex items-center space-x-2 shadow-lg shadow-red-600/20 hover:-translate-y-0.5"
             >
               <PhoneOff size={20} />
-              <span>Leave Session</span>
+              <span>{user?.role === "tutor" ? "End / Leave" : "Leave Session"}</span>
             </button>
           </div>
         </div>
