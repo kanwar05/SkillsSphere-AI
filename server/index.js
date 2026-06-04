@@ -135,6 +135,7 @@ app.use(
     credentials: true,
   }),
 );
+app.use("/api/errors", errorReportRoutes);
 app.use(express.json({ limit: "1mb" }));
 
 // Security headers
@@ -198,7 +199,6 @@ app.use("/api/cover-letters", requireDB, coverLetterRoutes);
 app.use("/api/classrooms", requireDB, classroomRoutes);
 app.use("/api/users", requireDB, userRoutes);
 app.use("/api/interviews", requireDB, interviewRoutes);
-app.use("/api/errors", errorReportRoutes);
 app.use("/api/files", requireDB, fileRoutes);
 app.use("/api/notifications", requireDB, notificationRoutes);
 app.use("/api/analytics", requireDB, analyticsRoutes);
