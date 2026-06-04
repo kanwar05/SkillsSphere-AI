@@ -228,9 +228,23 @@ export const deleteJob = async (id, recruiterId) => {
       }
 
       // Delete all associated applications
-      await JobApplication.deleteMany({ job: id }).session(dbSession);
-      
-      await JobPosting.findByIdAndDelete(id).session(dbSession);
+      const applications = await JobApplication.find({ job: id }).select("applicant");
+await JobApplication.deleteMany({ job: id });
+await JobPosting.findByIdAndDelete(id);
+
+const io = getIO();
+for (const app of applications) {
+  await Notification.create({
+    userId: app.applicant,
+    type: "application",
+    title: "Job Posting Removed",
+    message: `A job you applied to has been removed by the recruiter.`,
+    metadata: { jobId: id }
+  });
+  if (io) {
+    io.to(`user_${app.applicant}`).emit("new-notification", {});
+  }
+}
 
       await dbSession.commitTransaction();
     } catch (error) {
