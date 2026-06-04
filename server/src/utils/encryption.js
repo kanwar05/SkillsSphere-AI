@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import logger from "./logger.js";
 
 const getEncryptionKey = () => {
   const secret = process.env.ENCRYPTION_KEY || process.env.JWT_SECRET || "default_super_secret_key_skills_sphere";
@@ -107,8 +108,14 @@ export const decrypt = (ciphertext) => {
       return isJson ? JSON.parse(decrypted) : decrypted;
     }
   } catch (error) {
-    // If decryption fails, return the original text (fallback)
-    return ciphertext;
+    // Log the failure so key-rotation issues and data corruption are visible.
+    // Return null rather than the raw ciphertext to prevent encrypted strings
+    // from leaking into API responses or being displayed in the UI.
+    logger.error("[decrypt] Decryption failed — possible key mismatch or data corruption", {
+      ciphertextPrefix: ciphertext.substring(0, 10),
+      error: error.message,
+    });
+    return null;
   }
-  return ciphertext;
+  return null;
 };
