@@ -243,10 +243,23 @@ initRoadmapSockets(io);
 // Catch-all 404 handler for API routes
 // This prevents Express from returning HTML on missing routes, which crashes frontend JSON parsers.
 app.use("/api/*", (req, res) => {
-  res.status(404).json({ success: false, message: `API route not found: ${req.method} ${req.originalUrl}` });
+  res.status(404).json({
+    success: false,
+    message: `API route not found: ${req.method} ${req.originalUrl}`,
+  });
+});
+
+// Global 404 JSON handler for non-API routes.
+// Prevents Express from returning HTML for unknown routes which may break JSON-based frontend calls.
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
 });
 
 app.use(globalErrorHandler);
+
 
 server.listen(PORT, () => {
   logger.log(`Server running on http://localhost:${PORT}`);
