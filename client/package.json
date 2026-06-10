@@ -35,10 +35,6 @@
     "vite-plugin-node-polyfills": "^0.26.0",
     "zod": "^3.25.76"
   },
-  "optionalDependencies": {
-    "@esbuild/darwin-arm64": "^0.28.0",
-    "@rollup/rollup-darwin-arm64": "^4.61.0"
-  },
   "devDependencies": {
     "@playwright/test": "^1.42.0",
     "@testing-library/jest-dom": "^6.4.2",
