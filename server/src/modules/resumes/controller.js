@@ -163,10 +163,10 @@ export const analyzeResume = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    console.time("ResumeAnalysis");
-    console.time("ResumeParsing");
+    const t0ResumeAnalysis = Date.now();
+    const t0ResumeParsing = Date.now();
     const parsedData = await controllerDependencies.parseResume(file.path);
-    console.timeEnd("ResumeParsing");
+    logger.debug(`ResumeParsing completed in ${Date.now() - t0ResumeParsing}ms`);
 
     const isScannedPdf = controllerDependencies.validateExtractedText(parsedData.resumeText || "");
 
@@ -239,7 +239,7 @@ export const analyzeResume = asyncHandler(async (req, res, next) => {
         }
       }
 
-      console.timeEnd("ResumeAnalysis");
+      logger.debug(`ResumeAnalysis (cache hit) completed in ${Date.now() - t0ResumeAnalysis}ms`);
 
       const { resumeText: _rt, ...dataWithoutText } = safeData;
       return res.status(200).json({
@@ -258,23 +258,23 @@ export const analyzeResume = asyncHandler(async (req, res, next) => {
 
     // --- CACHE MISS: RUN PIPELINE ---
     // 🧠 RUN PIPELINE (ONLY LOGIC ENTRY)
-    console.time("PipelineExecution");
+    const t0Pipeline = Date.now();
     const pipelineResult = await runPipeline({
       resumeData: parsedData,
       jobSkills,
       jobDescription: req.body.jobDescription,
     });
-    console.timeEnd("PipelineExecution");
-    
+    logger.debug(`PipelineExecution completed in ${Date.now() - t0Pipeline}ms`);
+
     // 🔗 LINK VERIFICATION: Check if extracted links are alive
-    console.time("LinkVerification");
+    const t0LinkVerification = Date.now();
     const linksToVerify = [
       parsedData.linkedin,
       parsedData.github,
       parsedData.portfolio
     ].filter(Boolean);
     const verifiedLinks = await verifyLinks(linksToVerify);
-    console.timeEnd("LinkVerification");
+    logger.debug(`LinkVerification completed in ${Date.now() - t0LinkVerification}ms`);
 
     // 🔥 Normalize everything
     const safeData = normalizeResumeData(parsedData);
@@ -344,7 +344,7 @@ export const analyzeResume = asyncHandler(async (req, res, next) => {
       }
     }
 
-    console.timeEnd("ResumeAnalysis");
+    logger.debug(`ResumeAnalysis (cache hit) completed in ${Date.now() - t0ResumeAnalysis}ms`);
 
     const { resumeText: _rt, ...dataWithoutText } = safeData;
     return res.status(200).json({

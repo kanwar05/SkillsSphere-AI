@@ -49,7 +49,7 @@ export const evaluateMatches = async (user, resume, preFilteredJobs = null) => {
   openJobs = rankedJobs.slice(0, 10).map(item => item.job);
 
   // 3. Evaluate each pre-filtered job using the AI/ML pipeline in batches
-  console.time(`Matching evaluation for ${openJobs.length} jobs`);
+  const t0Matching = Date.now();
   const recommendations = [];
   const BATCH_SIZE = 5;
 
@@ -75,7 +75,7 @@ export const evaluateMatches = async (user, resume, preFilteredJobs = null) => {
     );
     recommendations.push(...batchResults);
   }
-  console.timeEnd(`Matching evaluation for ${openJobs.length} jobs`);
+  logger.debug(`Matching evaluation for ${openJobs.length} jobs completed in ${Date.now() - t0Matching}ms`);
 
   // 3. Sort by score (highest first)
   recommendations.sort((a, b) => b.score - a.score);

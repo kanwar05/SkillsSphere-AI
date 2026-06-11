@@ -9,6 +9,7 @@ import LoadingState from "../../../shared/components/LoadingState";
 import ErrorState from "../../../shared/components/ErrorState";
 import EmptyState from "../../../shared/components/EmptyState";
 import { Pagination } from "../../../shared/components";
+import Footer from "../../../shared/components/Footer";
 import { apiRequest } from "../../../services/apiClient";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 

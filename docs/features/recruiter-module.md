@@ -294,7 +294,7 @@ The creation form integrates `react-hook-form` coupled tightly with `zod` schema
 
 ### `RecruiterAnalyticsPage.jsx`
 Responsible for deep AI/ATS visual analytics, separated into highly modular segmentation tabs.
-- **AI & ATS Intelligence Stability**: This component utilizes highly strict boundary checks. The backend delivers aggregated `lowAtsCount` and complex `matchCategoryDistribution` matrices. These are mapped dynamically to `CircularProgressRing` SVG gauges and `recharts` Pie distributions. 
+- **AI & ATS Intelligence Stability**: This component utilizes highly strict boundary checks. The backend delivers aggregated `lowAtsCount` and complex `matchCategoryDistribution` matrices. These are mapped dynamically to `CircularProgressRing` SVG gauges and `recharts` Pie distributions.
 - **Error Boundary Prevention**: The UI is explicitly engineered to avoid component crashes by rigorously asserting the availability of all external library dependencies (like `lucide-react` icons) and handling empty data payloads gracefully via `applicantsPerJob.length > 0` checks, rendering animated pulse skeletons instead of throwing exceptions.
 - **PDF/CSV Export Tooling**: Implements a highly optimized HTML-to-PDF canvas rasterizer and CSV stringifier natively in the browser, completely offloading export compute resources from the Node.js backend.
 

@@ -73,6 +73,7 @@ export const searchTalent = asyncHandler(async (req, res, next) => {
       ? skills
       : skills.split(",").map(s => s.trim()).filter(Boolean);
     const safeSkillsArray = skillsArray.filter(
+      // eslint-disable-next-line no-useless-escape
       skill => typeof skill === "string" && /^[a-zA-Z0-9\s#+\.\-\/]{1,50}$/.test(skill)
     );
     if (safeSkillsArray.length > 0) {
