@@ -5,7 +5,10 @@ import { apiRequest } from "../../../services/apiClient";
 import {
   saveInterviewSession,
   loadInterviewSession,
-  clearInterviewSession
+  clearInterviewSession,
+  saveInterviewAnswerDraft,
+  loadInterviewAnswerDraft,
+  clearInterviewAnswerDraft,
 } from "../../../utils/interviewSessionStorage";
 import { analyzeText, debounce } from "../utils/sentiment";
 import logger from "../../../utils/logger";
@@ -147,7 +150,7 @@ export const useInterviewState = (sessionId, isObserver) => {
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   // Load session from API or localStorage rehydration
@@ -186,23 +189,38 @@ export const useInterviewState = (sessionId, isObserver) => {
           idx = unansweredIdx >= 0 ? unansweredIdx : 0;
         }
 
-        setCurrentIndex(idx);
-        setCurrentQuestion({
+        const question = {
           questionText: data.answers[idx]?.questionText,
           questionId: data.answers[idx]?.questionId,
+        };
+        const savedDraft = loadInterviewAnswerDraft({
+          sessionId,
+          currentIndex: idx,
+          questionId: question.questionId,
         });
+        const restoredAnswer =
+          savedSession?.answer ||
+          savedSession?.messages?.at(-1)?.content ||
+          savedDraft?.answer ||
+          "";
+
+        if (savedDraft?.answer && !savedSession?.answer) {
+          setAnswer(savedDraft.answer);
+          setRecoveryMessage("Restored your saved answer draft.");
+          setTimeout(() => setRecoveryMessage(null), 3000);
+        }
+
+        setCurrentIndex(idx);
+        setCurrentQuestion(question);
         setIsLastQuestion(idx === data.answers.length - 1);
         
         saveInterviewSession({
           sessionId,
           currentIndex: idx,
-          answer: savedSession?.answer || "",
+          answer: restoredAnswer,
           elapsedTime: savedSession?.elapsedTime || 0,
           uploadStatus: savedSession?.uploadStatus || "idle",
-          currentQuestion: {
-            questionText: data.answers[idx]?.questionText,
-            questionId: data.answers[idx]?.questionId,
-          },
+          currentQuestion: question,
           messages: savedSession?.messages || [],
         });
       } catch (err) {
@@ -221,6 +239,11 @@ export const useInterviewState = (sessionId, isObserver) => {
   }, [sessionId]);
 
   const handleEvaluationResult = useCallback((data, textareaRef) => {
+    clearInterviewAnswerDraft({
+      sessionId,
+      currentIndex,
+      questionId: currentQuestion?.questionId,
+    });
     setLastScores(data.scores);
     setShowScores(true);
     setAnswer("");
@@ -233,14 +256,20 @@ export const useInterviewState = (sessionId, isObserver) => {
       setIsLastQuestion(true);
     } else if (data.nextQuestion) {
       setTimeout(() => {
+        const savedDraft = loadInterviewAnswerDraft({
+          sessionId,
+          currentIndex: data.nextQuestion.index,
+          questionId: data.nextQuestion.questionId,
+        });
         setCurrentQuestion(data.nextQuestion);
         setCurrentIndex(data.nextQuestion.index);
+        setAnswer(savedDraft?.answer || "");
         setShowScores(false);
         setLastScores(null);
         if (textareaRef?.current) textareaRef.current.focus();
       }, 3000);
     }
-  }, []);
+  }, [currentIndex, currentQuestion?.questionId, sessionId]);
 
   const handleAnswerChange = (e, socket) => {
     const nextAnswer = e.target.value;
@@ -250,6 +279,12 @@ export const useInterviewState = (sessionId, isObserver) => {
     persistBackup({
       answer: nextAnswer,
       messages: [{ role: "candidate", content: nextAnswer, timestamp: Date.now() }],
+    });
+    saveInterviewAnswerDraft({
+      sessionId,
+      currentIndex,
+      questionId: currentQuestion?.questionId,
+      answer: nextAnswer,
     });
 
     if (socket && !isObserver) {
@@ -302,6 +337,7 @@ export const useInterviewState = (sessionId, isObserver) => {
         (attempt) => setRequestStatus(`Retrying final submission (${attempt}/${MAX_RETRY_ATTEMPTS})...`),
       );
       clearInterviewSession();
+      clearInterviewAnswerDraft();
       navigate(`/mock-interview/${sessionId}/results`, { replace: true });
     } catch (err) {
       setFailedAction("complete");

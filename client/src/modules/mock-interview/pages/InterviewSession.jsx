@@ -249,9 +249,9 @@ const InterviewSession = () => {
                   <Loader2 size={14} className="animate-spin" /> {state.requestStatus}
                 </div>
               )}
-              {audioState.mediaWarning && (
+              {state.mediaWarning && (
                 <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 p-2 rounded-lg flex items-center gap-2" role="alert">
-                  <MicOff size={14} /> {audioState.mediaWarning}
+                  <MicOff size={14} /> {state.mediaWarning}
                 </div>
               )}
               {state.uploadStatus !== "idle" && (
