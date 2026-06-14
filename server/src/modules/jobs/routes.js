@@ -61,7 +61,7 @@ router.get("/", cacheMiddleware("jobs", 300), getJobs);
  *       200:
  *         description: Recommended jobs
  */
-router.get("/recommendations", getRecommendations);
+router.get("/recommendations", authorizeRoles("student"), getRecommendations);
 router.get("/trends/skills", getSkillTrends);
 
 // Recruiter-only routes
