@@ -1,10 +1,50 @@
 import { z } from 'zod';
 
+const hasValidDomainHostname = (hostname) => {
+  const normalizedHostname = hostname.toLowerCase();
+
+  if (
+    normalizedHostname === "localhost" ||
+    normalizedHostname.includes("..") ||
+    !normalizedHostname.includes(".")
+  ) {
+    return false;
+  }
+
+  return /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/.test(
+    normalizedHostname,
+  );
+};
+
+const isValidCompanyWebsite = (value) => {
+  const trimmedValue = value.trim();
+  if (!trimmedValue) return true;
+
+  try {
+    const parsedUrl = new URL(
+      /^https?:\/\//i.test(trimmedValue) ? trimmedValue : `https://${trimmedValue}`,
+    );
+
+    return (
+      ["http:", "https:"].includes(parsedUrl.protocol) &&
+      hasValidDomainHostname(parsedUrl.hostname)
+    );
+  } catch {
+    return false;
+  }
+};
+
+const companyWebsiteSchema = z
+  .string()
+  .trim()
+  .refine(isValidCompanyWebsite, "Invalid URL")
+  .optional();
+
 export const updateProfileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').optional(),
   role: z.string().optional(),
   company: z.string().optional(),
-  companyWebsite: z.string().url('Invalid URL').optional(),
+  companyWebsite: companyWebsiteSchema,
   linkedinUrl: z.string().optional(),
   credentialUrl: z.string().optional(),
   bio: z.string().optional(),
