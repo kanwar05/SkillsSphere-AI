@@ -10,6 +10,8 @@ import {
   normalizeOAuthRedirectPath,
 } from "../controller.js";
 
+process.env.OAUTH_STATE_SECRET = "Str0ngOAuthStateSecretValue32Chars!";
+
 const encodeState = (stateObj) =>
   encodeURIComponent(
     Buffer.from(JSON.stringify(stateObj), "utf8").toString("base64"),

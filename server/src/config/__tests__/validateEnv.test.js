@@ -13,6 +13,7 @@ import {
 const validBaseEnv = {
   NODE_ENV: "production",
   JWT_SECRET: "Str0ngProductionSecretValueForJwt!",
+  OAUTH_STATE_SECRET: "Str0ngOAuthStateSecretValue32Chars!",
   GOOGLE_CLIENT_ID: "1234567890-test.apps.googleusercontent.com",
   GOOGLE_CLIENT_SECRET: "google-oauth-client-secret",
   GOOGLE_CALLBACK_URL: "https://api.skillssphere.ai/api/auth/google/callback",

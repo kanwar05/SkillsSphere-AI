@@ -1,5 +1,6 @@
 import test, { mock, afterEach } from "node:test";
 import assert from "node:assert/strict";
+import logger from "../../../utils/logger.js";
 import AnalysisHistory from "../../../database/models/AnalysisHistory.js";
 import CoverLetter from "../../../database/models/CoverLetter.js";
 import Resume from "../../../database/models/Resume.js";

@@ -20,6 +20,8 @@ import AppError from "../../utils/AppError.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 import { invalidateCacheByPrefix } from "../../utils/cacheHelpers.js";
 import redisClient from "../../config/redis.js";
+import mongoose from "mongoose";
+import logger from "../../utils/logger.js";
 
 /**
  * Sanitizes a string to prevent CSV Injection (Formula Injection).
@@ -343,6 +345,35 @@ export const getRankedCandidates = asyncHandler(async (req, res) => {
 export const exportApplicationsToCSV = asyncHandler(async (req, res) => {
   const { status, sortBy } = req.query || {};
 
+  // Validate job ID format
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    throw new AppError("Invalid job ID format", 400);
+  }
+
+  // Validate status filter if provided
+  const allowedStatuses = ["pending", "reviewed", "shortlisted", "rejected", "withdrawn"];
+  if (status && !allowedStatuses.includes(status.trim().toLowerCase())) {
+    throw new AppError(`Invalid status filter. Allowed values: ${allowedStatuses.join(", ")}`, 400);
+  }
+
+  // Validate sort options if provided
+  const allowedSortOptions = ["matchScore", "newest", "oldest"];
+  if (sortBy && !allowedSortOptions.includes(sortBy.trim())) {
+    throw new AppError(`Invalid sort option. Allowed values: ${allowedSortOptions.join(", ")}`, 400);
+  }
+
+  const job = await JobPosting.findById(req.params.id);
+  if (!job) {
+    throw new AppError("Job posting not found", 404);
+  }
+
+  if (job.recruiter.toString() !== req.user._id.toString()) {
+    throw new AppError("You do not have permission to view these applications", 403);
+  }
+
+  logger.info(`Recruiter ${req.user._id} initiated CSV export for job ${req.params.id} (status: ${status || "all"}, sortBy: ${sortBy || "matchScore"})`);
+
+  res.status(200);
   res.setHeader("Content-Type", "text/csv");
   res.setHeader(
     "Content-Disposition",

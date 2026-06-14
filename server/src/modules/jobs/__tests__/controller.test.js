@@ -225,10 +225,10 @@ describe("Job Controller", () => {
 
   describe("exportApplicationsToCSV", () => {
     it("should export applications as CSV and set correct headers", async () => {
-      req.params.id = "job123";
+      req.params.id = "507f1f77bcf86cd799439011";
       
       const mockJob = {
-        _id: "job123",
+        _id: "507f1f77bcf86cd799439011",
         recruiter: { toString: () => "user123" }
       };
       
@@ -253,7 +253,6 @@ describe("Job Controller", () => {
         limit() { return this; },
         lean() { return this; }
       };
-      // We don't use lean anymore in the updated service, we let the promise resolve:
       mockQuery.then = function(resolve) { resolve(mockApplications); };
       
       mock.method(JobApplication, "find", () => mockQuery);
@@ -266,8 +265,10 @@ describe("Job Controller", () => {
       const testPromise = new Promise((resolve) => { resolveTest = resolve; });
       
       res.setHeader = mock.fn((name, value) => { headers[name] = value; });
-      res.send = mock.fn((content) => {
-        sentContent = content;
+      res.write = mock.fn((content) => {
+        sentContent += content;
+      });
+      res.end = mock.fn(() => {
         resolveTest();
       });
       next = mock.fn((err) => {
@@ -280,7 +281,7 @@ describe("Job Controller", () => {
 
       assert.equal(res.status.mock.calls[0].arguments[0], 200);
       assert.equal(headers["Content-Type"], "text/csv");
-      assert.ok(headers["Content-Disposition"].includes("job-job123-applicants.csv"));
+      assert.ok(headers["Content-Disposition"].includes("job-507f1f77bcf86cd799439011-applicants.csv"));
       
       const lines = sentContent.split("\n");
       assert.equal(lines[0], "Candidate Name,Candidate Email,Match Score,Match Category,Status,Apply Date,Resume Link,Cover Note");
@@ -291,10 +292,10 @@ describe("Job Controller", () => {
     });
 
     it("should throw 403 error if recruiter is not owner of the job", async () => {
-      req.params.id = "job123";
+      req.params.id = "507f1f77bcf86cd799439011";
       
       const mockJob = {
-        _id: "job123",
+        _id: "507f1f77bcf86cd799439011",
         recruiter: { toString: () => "differentUser" }
       };
       
@@ -313,6 +314,65 @@ describe("Job Controller", () => {
       assert.equal(next.mock.calls.length, 1);
       assert.ok(error instanceof AppError);
       assert.equal(error.statusCode, 403);
+    });
+
+    it("should throw 400 error if job ID format is invalid", async () => {
+      req.params.id = "invalid-id-format";
+
+      let resolveTest;
+      const testPromise = new Promise((resolve) => { resolveTest = resolve; });
+
+      next = mock.fn((err) => {
+        resolveTest(err);
+      });
+
+      await exportApplicationsToCSV(req, res, next);
+      const error = await testPromise;
+
+      assert.equal(next.mock.calls.length, 1);
+      assert.ok(error instanceof AppError);
+      assert.equal(error.statusCode, 400);
+      assert.ok(error.message.includes("Invalid job ID format"));
+    });
+
+    it("should throw 400 error if status filter query parameter is invalid", async () => {
+      req.params.id = "507f1f77bcf86cd799439011";
+      req.query.status = "invalid-status-value";
+
+      let resolveTest;
+      const testPromise = new Promise((resolve) => { resolveTest = resolve; });
+
+      next = mock.fn((err) => {
+        resolveTest(err);
+      });
+
+      await exportApplicationsToCSV(req, res, next);
+      const error = await testPromise;
+
+      assert.equal(next.mock.calls.length, 1);
+      assert.ok(error instanceof AppError);
+      assert.equal(error.statusCode, 400);
+      assert.ok(error.message.includes("Invalid status filter"));
+    });
+
+    it("should throw 400 error if sortBy query parameter is invalid", async () => {
+      req.params.id = "507f1f77bcf86cd799439011";
+      req.query.sortBy = "invalid-sort-value";
+
+      let resolveTest;
+      const testPromise = new Promise((resolve) => { resolveTest = resolve; });
+
+      next = mock.fn((err) => {
+        resolveTest(err);
+      });
+
+      await exportApplicationsToCSV(req, res, next);
+      const error = await testPromise;
+
+      assert.equal(next.mock.calls.length, 1);
+      assert.ok(error instanceof AppError);
+      assert.equal(error.statusCode, 400);
+      assert.ok(error.message.includes("Invalid sort option"));
     });
   });
 });

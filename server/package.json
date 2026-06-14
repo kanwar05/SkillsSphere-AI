@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "test": "node --test",
+    "test": "node --experimental-test-module-mocks --test",
     "lint": "eslint . --ext js,cjs --report-unused-disable-directives --max-warnings 0",
     "depcruise": "depcruise src --config .dependency-cruiser.js",
     "depcruise:validate": "depcruise src --config .dependency-cruiser.js --output-type err-long",
