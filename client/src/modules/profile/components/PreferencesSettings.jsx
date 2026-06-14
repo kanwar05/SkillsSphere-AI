@@ -9,10 +9,11 @@ import {
 const DEFAULT_PREFERENCES = {
   notifications: {
     emailNotifications: true,
+    inAppNotifications: true,
     interviewReminders: true,
-    jobAlerts: true,
-    applicationStatusUpdates: true,
-    platformUpdates: false,
+    jobUpdates: true,
+    resumeAnalysis: true,
+    systemAlerts: true,
   },
   emailFrequency: "weekly",
   privacy: {
@@ -24,11 +25,15 @@ const DEFAULT_PREFERENCES = {
 };
 
 const NOTIFICATION_OPTIONS = [
-  ["emailNotifications", "Email notifications"],
+  ["jobUpdates", "Job updates"],
   ["interviewReminders", "Interview reminders"],
-  ["jobAlerts", "Job alerts"],
-  ["applicationStatusUpdates", "Application status updates"],
-  ["platformUpdates", "Platform updates/news"],
+  ["resumeAnalysis", "Resume analysis"],
+  ["systemAlerts", "System alerts"],
+];
+
+const NOTIFICATION_CHANNELS = [
+  ["emailNotifications", "Email notifications"],
+  ["inAppNotifications", "In-app notifications"],
 ];
 
 const PRIVACY_TOGGLES = [
@@ -50,11 +55,17 @@ const PROFILE_VISIBILITIES = [
   ["private", "Private"],
 ];
 
+const mergeNotificationDefaults = (notifications = {}) => ({
+  emailNotifications: notifications.emailNotifications ?? DEFAULT_PREFERENCES.notifications.emailNotifications,
+  inAppNotifications: notifications.inAppNotifications ?? DEFAULT_PREFERENCES.notifications.inAppNotifications,
+  interviewReminders: notifications.interviewReminders ?? DEFAULT_PREFERENCES.notifications.interviewReminders,
+  jobUpdates: notifications.jobUpdates ?? notifications.jobAlerts ?? DEFAULT_PREFERENCES.notifications.jobUpdates,
+  resumeAnalysis: notifications.resumeAnalysis ?? DEFAULT_PREFERENCES.notifications.resumeAnalysis,
+  systemAlerts: notifications.systemAlerts ?? notifications.platformUpdates ?? DEFAULT_PREFERENCES.notifications.systemAlerts,
+});
+
 const mergeWithDefaults = (preferences = {}) => ({
-  notifications: {
-    ...DEFAULT_PREFERENCES.notifications,
-    ...(preferences.notifications || {}),
-  },
+  notifications: mergeNotificationDefaults(preferences.notifications),
   emailFrequency: preferences.emailFrequency || DEFAULT_PREFERENCES.emailFrequency,
   privacy: {
     ...DEFAULT_PREFERENCES.privacy,
@@ -247,6 +258,18 @@ const PreferencesSettings = ({ token }) => {
 
       <div className="space-y-4">
         <SettingsGroup title="Notification Preferences" icon={<Bell size={16} className="text-indigo-500" />}>
+          <div className="mb-4 grid gap-3 sm:grid-cols-2">
+            {NOTIFICATION_CHANNELS.map(([key, label]) => (
+              <ToggleRow
+                key={key}
+                id={`pref-${key}`}
+                label={label}
+                checked={preferences.notifications[key]}
+                disabled={saving}
+                onChange={(event) => updateNotification(key, event.target.checked)}
+              />
+            ))}
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {NOTIFICATION_OPTIONS.map(([key, label]) => (
               <ToggleRow

@@ -16,11 +16,12 @@ export const updateProfileSchema = z.object({
 export const updatePreferencesSchema = z.object({
   notifications: z.object({
     emailNotifications: z.boolean().optional(),
+    inAppNotifications: z.boolean().optional(),
     interviewReminders: z.boolean().optional(),
-    jobAlerts: z.boolean().optional(),
-    applicationStatusUpdates: z.boolean().optional(),
-    platformUpdates: z.boolean().optional(),
+    jobUpdates: z.boolean().optional(),
+    resumeAnalysis: z.boolean().optional(),
+    systemAlerts: z.boolean().optional(),
   }).optional(),
-  emailFrequency: z.enum(['daily', 'weekly', 'monthly', 'never']).optional(),
+  emailFrequency: z.enum(['instant', 'daily', 'weekly', 'never']).optional(),
   privacy: z.record(z.any()).optional(),
 });

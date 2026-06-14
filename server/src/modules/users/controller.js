@@ -21,10 +21,11 @@ import logger from "../../utils/logger.js";
 export const DEFAULT_USER_PREFERENCES = {
   notifications: {
     emailNotifications: true,
+    inAppNotifications: true,
     interviewReminders: true,
-    jobAlerts: true,
-    applicationStatusUpdates: true,
-    platformUpdates: false,
+    jobUpdates: true,
+    resumeAnalysis: true,
+    systemAlerts: true,
   },
   emailFrequency: "weekly",
   privacy: {
@@ -47,6 +48,23 @@ const isPlainObject = (value) =>
 const toPlainPreferences = (preferences = {}) =>
   typeof preferences?.toObject === "function" ? preferences.toObject() : preferences || {};
 
+const normalizeNotificationPreferences = (notifications = {}) => {
+  if (!isPlainObject(notifications)) return {};
+
+  const normalized = {
+    emailNotifications: notifications.emailNotifications,
+    inAppNotifications: notifications.inAppNotifications,
+    interviewReminders: notifications.interviewReminders,
+    jobUpdates: notifications.jobUpdates ?? notifications.jobAlerts,
+    resumeAnalysis: notifications.resumeAnalysis,
+    systemAlerts: notifications.systemAlerts ?? notifications.platformUpdates,
+  };
+
+  return Object.fromEntries(
+    Object.entries(normalized).filter(([, value]) => value !== undefined),
+  );
+};
+
 export const getDefaultPreferences = () => ({
   notifications: { ...DEFAULT_USER_PREFERENCES.notifications },
   emailFrequency: DEFAULT_USER_PREFERENCES.emailFrequency,
@@ -59,7 +77,7 @@ export const mergePreferencesWithDefaults = (preferences = {}) => {
   return {
     notifications: {
       ...DEFAULT_USER_PREFERENCES.notifications,
-      ...(isPlainObject(plain.notifications) ? plain.notifications : {}),
+      ...normalizeNotificationPreferences(plain.notifications),
     },
     emailFrequency: plain.emailFrequency || DEFAULT_USER_PREFERENCES.emailFrequency,
     privacy: {

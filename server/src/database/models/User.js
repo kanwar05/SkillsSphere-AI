@@ -101,10 +101,11 @@ const userSchema = new mongoose.Schema(
     preferences: {
       notifications: {
         emailNotifications: { type: Boolean, default: true },
+        inAppNotifications: { type: Boolean, default: true },
         interviewReminders: { type: Boolean, default: true },
-        jobAlerts: { type: Boolean, default: true },
-        applicationStatusUpdates: { type: Boolean, default: true },
-        platformUpdates: { type: Boolean, default: false },
+        jobUpdates: { type: Boolean, default: true },
+        resumeAnalysis: { type: Boolean, default: true },
+        systemAlerts: { type: Boolean, default: true },
       },
       emailFrequency: {
         type: String,

@@ -15,10 +15,11 @@ vi.mock("../../services/profileService", () => ({
 const savedPreferences = {
   notifications: {
     emailNotifications: true,
+    inAppNotifications: true,
     interviewReminders: true,
-    jobAlerts: false,
-    applicationStatusUpdates: true,
-    platformUpdates: false,
+    jobUpdates: false,
+    resumeAnalysis: true,
+    systemAlerts: false,
   },
   emailFrequency: "weekly",
   privacy: {
@@ -44,7 +45,9 @@ describe("PreferencesSettings", () => {
     expect(screen.getByText(/loading preferences/i)).toBeInTheDocument();
 
     expect(await screen.findByText(/notification preferences/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/job alerts/i)).not.toBeChecked();
+    expect(screen.getByLabelText(/email notifications/i)).toBeChecked();
+    expect(screen.getByLabelText(/in-app notifications/i)).toBeChecked();
+    expect(screen.getByLabelText(/job updates/i)).not.toBeChecked();
     expect(screen.getByLabelText(/email frequency/i)).toHaveValue("weekly");
     expect(screen.getByLabelText(/profile visibility/i)).toHaveValue("recruiters");
     expect(getUserPreferences).toHaveBeenCalledWith("test-token");
@@ -56,7 +59,7 @@ describe("PreferencesSettings", () => {
     updateUserPreferences.mockResolvedValue({
       preferences: {
         ...savedPreferences,
-        notifications: { ...savedPreferences.notifications, jobAlerts: true },
+        notifications: { ...savedPreferences.notifications, jobUpdates: true, inAppNotifications: false },
         emailFrequency: "daily",
       },
     });
@@ -65,7 +68,8 @@ describe("PreferencesSettings", () => {
 
     await screen.findByText(/notification preferences/i);
     await act(async () => {
-      await user.click(screen.getByLabelText(/job alerts/i));
+      await user.click(screen.getByLabelText(/job updates/i));
+      await user.click(screen.getByLabelText(/in-app notifications/i));
       await user.selectOptions(screen.getByLabelText(/email frequency/i), "daily");
       await user.click(screen.getByRole("button", { name: /save settings/i }));
     });
@@ -77,7 +81,7 @@ describe("PreferencesSettings", () => {
     expect(updateUserPreferences).toHaveBeenCalledWith(
       expect.objectContaining({
         emailFrequency: "daily",
-        notifications: expect.objectContaining({ jobAlerts: true }),
+        notifications: expect.objectContaining({ jobUpdates: true, inAppNotifications: false }),
       }),
       "test-token",
     );
@@ -90,16 +94,16 @@ describe("PreferencesSettings", () => {
 
     renderSettings();
 
-    const jobAlerts = await screen.findByLabelText(/job alerts/i);
+    const jobUpdates = await screen.findByLabelText(/job updates/i);
     await act(async () => {
-      await user.click(jobAlerts);
+      await user.click(jobUpdates);
     });
-    expect(jobAlerts).toBeChecked();
+    expect(jobUpdates).toBeChecked();
 
     await act(async () => {
       await user.click(screen.getByRole("button", { name: /reset/i }));
     });
-    expect(jobAlerts).not.toBeChecked();
+    expect(jobUpdates).not.toBeChecked();
   });
 
   it("shows an error message when loading fails", async () => {
@@ -119,7 +123,7 @@ describe("PreferencesSettings", () => {
 
     await screen.findByText(/notification preferences/i);
     await act(async () => {
-      await user.click(screen.getByLabelText(/platform updates\/news/i));
+      await user.click(screen.getByLabelText(/system alerts/i));
       await user.click(screen.getByRole("button", { name: /save settings/i }));
     });
 
@@ -140,7 +144,7 @@ describe("PreferencesSettings", () => {
 
     await screen.findByText(/notification preferences/i);
     await act(async () => {
-      await user.click(screen.getByLabelText(/platform updates\/news/i));
+      await user.click(screen.getByLabelText(/system alerts/i));
       await user.click(screen.getByRole("button", { name: /save settings/i }));
     });
 
