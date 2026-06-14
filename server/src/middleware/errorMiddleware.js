@@ -39,10 +39,10 @@ const handleDuplicateFieldsDB = (err) => {
 
     // Capture either a quoted string or a number-like value inside the dup key object.
     // Example: dup key: { email: "a@b.com" }
-    const match = raw.match(/dup key:\s*\{[^}]*:\s*(?:"([^"]*)"|'([^']*)'|([^\s}]+))\s*\}/i);
+    const match = raw.match(/dup key:\s*\{\s*([^:\s}]+)\s*:\s*(?:"([^"]*)"|'([^']*)'|([^,\s}]+))/i);
 
     const value = match
-      ? String(match[1] || match[2] || match[3] || "unknown").trim()
+      ? String(match[2] || match[3] || match[4] || "unknown").trim()
       : "unknown";
 
     const message = `Duplicate field value: ${value}. Please use another value!`;
@@ -238,6 +238,7 @@ const globalErrorHandler = (err, req, res, next) => {
 
   if (isTaggedAiAxiosError || isTypedGeminiSdkError) {
     error = handleAIError(error);
+    error.statusCode = error.statusCode ?? 503;
   }
 
 
@@ -259,8 +260,8 @@ const globalErrorHandler = (err, req, res, next) => {
     }
   }
 
-  error.statusCode = error.statusCode || 500;
-  error.status = error.status || "error";
+  error.statusCode = error.statusCode ?? err.statusCode ?? 500;
+  error.status = error.status ?? err.status ?? "error";
 
   if (process.env.NODE_ENV === "development") {
     res.status(error.statusCode).json({

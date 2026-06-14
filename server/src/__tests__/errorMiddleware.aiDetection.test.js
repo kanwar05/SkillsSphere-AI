@@ -122,5 +122,24 @@ describe("errorMiddleware AI detection", () => {
     );
 
   });
+
+  test("falls back to 503 if handleAIError does not map to a specific statusCode", async () => {
+    process.env.NODE_ENV = "production";
+
+    const err = new Error("Unrecognized error message from generative AI model");
+    err.isOperational = true;
+    err.code = undefined;
+    err.isAxiosError = false;
+    err.name = "GoogleGenerativeAI";
+    err.provider = "google";
+
+    const req = { method: "GET", originalUrl: "/api/test" };
+    const res = makeRes();
+
+    globalErrorHandler(err, req, res, next);
+
+    assert.equal(res.statusCode, 503);
+    assert.match(res.payload.message, /AI service is currently unavailable/i);
+  });
 });
 

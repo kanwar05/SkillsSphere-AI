@@ -75,5 +75,55 @@ describe("errorMiddleware duplicate key value extraction", () => {
       /Duplicate field value: FALLBACK_VALUE\. Please use another value!/,
     );
   });
+
+  test("falls back to parsing first field from multi-field duplicate key message when keyValue is missing", async () => {
+    process.env.NODE_ENV = "production";
+
+    const err = new Error(
+      "E11000 duplicate key error collection: users index: email_1 dup key: { email: \"MULTI_FIELD_VAL\", tenantId: 100 }"
+    );
+
+    err.isOperational = true;
+    err.statusCode = 400;
+    err.status = "error";
+    err.code = 11000;
+    err.keyValue = undefined;
+
+    const req = { method: "POST", originalUrl: "/api/test" };
+    const res = makeRes();
+
+    globalErrorHandler(err, req, res, next);
+
+    assert.equal(res.statusCode, 400);
+    assert.match(
+      res.payload.message,
+      /Duplicate field value: MULTI_FIELD_VAL\. Please use another value!/
+    );
+  });
+
+  test("falls back to parsing non-string values from duplicate key message when keyValue is missing", async () => {
+    process.env.NODE_ENV = "production";
+
+    const err = new Error(
+      "E11000 duplicate key error collection: users index: num_1 dup key: { num: 9999 }"
+    );
+
+    err.isOperational = true;
+    err.statusCode = 400;
+    err.status = "error";
+    err.code = 11000;
+    err.keyValue = undefined;
+
+    const req = { method: "POST", originalUrl: "/api/test" };
+    const res = makeRes();
+
+    globalErrorHandler(err, req, res, next);
+
+    assert.equal(res.statusCode, 400);
+    assert.match(
+      res.payload.message,
+      /Duplicate field value: 9999\. Please use another value!/
+    );
+  });
 });
 
