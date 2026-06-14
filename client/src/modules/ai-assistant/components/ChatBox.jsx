@@ -31,10 +31,9 @@ const ChatBox = ({ onClose }) => {
 
   const sendMessageToBackend = async (history) => {
     try {
-      const message = history[history.length - 1]?.text;
       const data = await apiRequest("/api/chat", {
         method: "POST",
-        body: { message },
+        body: { messages: history },
         token: getToken(),
       });
       return data.reply;
