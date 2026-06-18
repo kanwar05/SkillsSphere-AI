@@ -374,6 +374,8 @@ export const verifyTopic = asyncHandler(async (req, res) => {
   } else {
     topic.verifiedBy = null;
     topic.verifiedAt = null;
+    topic.status = "in_progress";
+    topic.completedAt = null;
   }
 
   // --- Achievement Calculation Logic ---
