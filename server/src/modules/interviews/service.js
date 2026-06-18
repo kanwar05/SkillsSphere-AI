@@ -11,6 +11,7 @@ import {
 import redisClient from "../../config/redis.js";
 import Notification from "../../database/models/Notification.js";
 import { getIO } from "../../utils/socketIO.js";
+import { safeDeletePhysicalFile } from "../../utils/fileUtils.js";
 
 import logger from "../../utils/logger.js";
 
@@ -213,14 +214,21 @@ export const processAnswerSubmission = async ({
       evaluation.speakingSpeed || "normal";
     session.answers[currentIndex].answeredAt = new Date();
 
+    const previousAudioPath = session.answers[currentIndex].audioPath;
+    const nextAudioPath = audioFile?.path || null;
+
     if (audioFile) {
-      session.answers[currentIndex].audioPath = audioFile.path || null;
+      session.answers[currentIndex].audioPath = nextAudioPath;
     }
 
     // Move to next question
     session.currentQuestionIndex = currentIndex + 1;
     session.lastActivityAt = new Date();
     await session.save();
+
+    if (previousAudioPath && nextAudioPath && previousAudioPath !== nextAudioPath) {
+      safeDeletePhysicalFile(previousAudioPath);
+    }
 
     // Prepare response
     const isLastQuestion = currentIndex + 1 >= session.totalQuestions;
