@@ -1,7 +1,6 @@
 import Resume from "../../database/models/Resume.js";
 import SemanticCache from "../../database/models/SemanticCache.js";
 import { safeDeletePhysicalFile } from "../../utils/fileUtils.js";
-
 /**
  * Upsert a resume for a user.
  * Each user keeps only one stored parsed resume record, 
@@ -15,10 +14,9 @@ import { safeDeletePhysicalFile } from "../../utils/fileUtils.js";
 export const upsertResume = async (userId, resumeData, includeText = false) => {
   // If the payload specifies an existing resume ID, we update that document
   if (resumeData._id) {
-    const existingResume = await Resume.findById(resumeData._id).select("file.path");
-    const oldFilePath = existingResume?.file?.path;
-    const newFilePath = resumeData.file?.path;
-
+const existingResume = await Resume.findById(resumeData._id).select("file.path");
+      const oldFilePath = existingResume?.file?.path;
+      const newFilePath = resumeData.file?.path;
     const query = Resume.findByIdAndUpdate(
       resumeData._id,
       resumeData,
@@ -27,13 +25,13 @@ export const upsertResume = async (userId, resumeData, includeText = false) => {
     if (includeText) {
       query.select("+resumeText");
     }
-    const updatedResume = await query;
+const updatedResume = await query;
 
-    if (updatedResume && oldFilePath && newFilePath && oldFilePath !== newFilePath) {
-      safeDeletePhysicalFile(oldFilePath);
-    }
+      if (updatedResume && oldFilePath && newFilePath && oldFilePath !== newFilePath) {
+        safeDeletePhysicalFile(oldFilePath);
+      }
 
-    return updatedResume;
+      return updatedResume;
   }
 
   // Otherwise, we are uploading a new resume version.
