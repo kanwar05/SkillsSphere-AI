@@ -28,6 +28,9 @@ import {
   getSkillTrends,
   updateApplicationStatus,
   updateStudentApplicationStatus,
+  saveJob,
+  unsaveJob,
+  getSavedJobs,
 } from "./controller.js";
 
 const router = express.Router();
@@ -110,6 +113,9 @@ router.post("/", authorizeRoles("recruiter"), requireFullAccess, jobCreationLimi
 // Student application routes (must be before /:id to avoid route conflict)
 router.get("/my-applications", authorizeRoles("student"), getMyApplications);
 router.get("/my-applications/details", authorizeRoles("student"), getMyApplicationsDetailed);
+router.get("/saved", authorizeRoles("student"), getSavedJobs);
+router.post("/:id/save", authorizeRoles("student"), saveJob);
+router.delete("/:id/save", authorizeRoles("student"), unsaveJob);
 
 // Job-specific routes
 router

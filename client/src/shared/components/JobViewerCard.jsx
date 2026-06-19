@@ -14,6 +14,7 @@ import {
   BarChart3,
   Globe,
   Users,
+  Bookmark,
 } from "lucide-react";
 import Button from "./Button";
 
@@ -128,6 +129,9 @@ const JobViewerCard = ({
   onViewStats,
   onViewApplicants,
   isApplied = false,
+  isSaved = false,
+  isSaving = false,
+  onToggleSave,
   className = "",
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -251,6 +255,25 @@ const JobViewerCard = ({
                   </p>
                 )}
               </div>
+              {viewerRole === "student" && onToggleSave && (
+                <button
+                  type="button"
+                  aria-label={isSaved ? "Remove from saved jobs" : "Save job"}
+                  aria-pressed={isSaved}
+                  disabled={isSaving}
+                  className={`shrink-0 rounded-xl border p-2.5 transition-colors ${
+                    isSaved
+                      ? "border-blue-300 bg-blue-100 text-blue-700 dark:border-blue-500/40 dark:bg-blue-500/15 dark:text-blue-300"
+                      : "border-gray-200 bg-white text-gray-500 hover:border-blue-300 hover:text-blue-600 dark:border-white/10 dark:bg-slate-900 dark:text-slate-400"
+                  } disabled:cursor-wait disabled:opacity-60`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onToggleSave(job);
+                  }}
+                >
+                  <Bookmark size={19} fill={isSaved ? "currentColor" : "none"} />
+                </button>
+              )}
               <div className="mt-1 shrink-0 text-blue-500 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400">
                 <ChevronDown size={20} className={`transform transition-transform ${isExpanded ? "rotate-180" : "-rotate-90"}`} />
               </div>
@@ -622,6 +645,9 @@ JobViewerCard.propTypes = {
 
   /** Student: whether the user has already applied to this job. */
   isApplied: PropTypes.bool,
+  isSaved: PropTypes.bool,
+  isSaving: PropTypes.bool,
+  onToggleSave: PropTypes.func,
 
   /** Additional CSS classes for the outer container. */
   className: PropTypes.string,

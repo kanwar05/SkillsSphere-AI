@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import JobPosting from "../../database/models/JobPosting.js";
 import JobApplication from "../../database/models/JobApplication.js";
+import SavedJob from "../../database/models/SavedJob.js";
 import Notification from "../../database/models/Notification.js";
 import User from "../../database/models/User.js";
 import * as resumeService from "../resumes/service.js";
@@ -115,6 +116,70 @@ export const getJobById = async (id) => {
   }
 
   return job;
+};
+
+export const saveJobForStudent = async (jobId, studentId) => {
+  if (!mongoose.Types.ObjectId.isValid(jobId)) {
+    throw new AppError("Invalid job ID format", 400);
+  }
+
+  const job = await JobPosting.findOne({ _id: jobId, status: "open" }).select("_id");
+  if (!job) {
+    throw new AppError("Open job posting not found", 404);
+  }
+
+  await SavedJob.findOneAndUpdate(
+    { student: studentId, job: jobId },
+    { $setOnInsert: { student: studentId, job: jobId } },
+    { upsert: true, new: true, setDefaultsOnInsert: true },
+  );
+
+  return jobId;
+};
+
+export const unsaveJobForStudent = async (jobId, studentId) => {
+  if (!mongoose.Types.ObjectId.isValid(jobId)) {
+    throw new AppError("Invalid job ID format", 400);
+  }
+
+  await SavedJob.deleteOne({ student: studentId, job: jobId });
+  return jobId;
+};
+
+export const getSavedJobsForStudent = async (studentId, { page = 1, limit = 10 } = {}) => {
+  const skip = (page - 1) * limit;
+
+  const [savedRecords, totalCount, savedJobIds] = await Promise.all([
+    SavedJob.find({ student: studentId })
+      .populate({
+        path: "job",
+        populate: {
+          path: "recruiter",
+          select: "name email company companyWebsite linkedinUrl",
+        },
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    SavedJob.countDocuments({ student: studentId }),
+    SavedJob.find({ student: studentId }).distinct("job"),
+  ]);
+
+  const jobs = savedRecords
+    .filter((record) => record.job)
+    .map((record) => ({
+      ...record.job,
+      savedAt: record.createdAt,
+    }));
+
+  return {
+    jobs,
+    savedJobIds: savedJobIds.map((id) => id.toString()),
+    totalCount,
+    totalPages: Math.ceil(totalCount / limit),
+    currentPage: page,
+  };
 };
 
 /**
@@ -235,6 +300,7 @@ export const deleteJob = async (id, recruiterId) => {
 
       // Delete all associated applications within transaction
       await JobApplication.deleteMany({ job: id }, { session: dbSession });
+      await SavedJob.deleteMany({ job: id }, { session: dbSession });
       await JobPosting.findByIdAndDelete(id, { session: dbSession });
 
       if (applications.length > 0) {
@@ -276,6 +342,7 @@ export const deleteJob = async (id, recruiterId) => {
     
     const applications = await JobApplication.find({ job: id }).select("applicant");
     await JobApplication.deleteMany({ job: id });
+    await SavedJob.deleteMany({ job: id });
     await JobPosting.findByIdAndDelete(id);
 
     if (applications.length > 0) {

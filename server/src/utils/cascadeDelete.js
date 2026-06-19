@@ -15,6 +15,7 @@ import ClassroomSession from "../database/models/ClassroomSession.js";
 import JobPosting from "../database/models/JobPosting.js";
 import Notification from "../database/models/Notification.js";
 import RoadmapComment from "../database/models/RoadmapComment.js";
+import SavedJob from "../database/models/SavedJob.js";
 
 import logger from "./logger.js";
 
@@ -86,6 +87,7 @@ await LearningProgress.updateMany(
   { session }
 );
     await JobApplication.deleteMany({ applicant: userId }, { session });
+    await SavedJob.deleteMany({ student: userId }, { session });
     await CoverLetter.deleteMany({ user: userId }, { session });
     await AnalysisHistory.deleteMany({ user: userId }, { session });
     await RoadmapComment.deleteMany({ sender: userId }, { session });
@@ -126,6 +128,7 @@ await LearningProgress.updateMany(
     if (postedJobs.length > 0) {
       const jobIds = postedJobs.map((j) => j._id);
       await JobApplication.deleteMany({ job: { $in: jobIds } }, { session });
+      await SavedJob.deleteMany({ job: { $in: jobIds } }, { session });
       
       // Clean up orphaned match results recommendations referencing these jobs
       await MatchResult.updateMany(

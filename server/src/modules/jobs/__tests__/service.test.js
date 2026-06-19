@@ -6,6 +6,7 @@ import JobApplication from "../../../database/models/JobApplication.js";
 import Resume from "../../../database/models/Resume.js";
 import AppError from "../../../utils/AppError.js";
 import Notification from "../../../database/models/Notification.js";
+import SavedJob from "../../../database/models/SavedJob.js";
 import * as resumeService from "../../resumes/service.js";
 import matchingService from "../../matching/service.js";
 import mongoose from "mongoose";
@@ -99,6 +100,7 @@ describe("Job Service", () => {
         select: async () => [{ applicant: "applicant123" }]
       }));
       mock.method(JobApplication, "deleteMany", () => ({ deletedCount: 5 }));
+      mock.method(SavedJob, "deleteMany", () => ({ deletedCount: 1 }));
       const mockQuery = {
         select: mock.fn(() => mockQuery),
         then: function(resolve) { resolve([{ applicant: new mongoose.Types.ObjectId().toString() }]); }
@@ -113,6 +115,7 @@ describe("Job Service", () => {
       assert.equal(JobPosting.findById.mock.calls[0].arguments[0], mockJobId);
       assert.equal(JobApplication.deleteMany.mock.calls.length, 1);
       assert.deepEqual(JobApplication.deleteMany.mock.calls[0].arguments, [{ job: mockJobId }]);
+      assert.deepEqual(SavedJob.deleteMany.mock.calls[0].arguments, [{ job: mockJobId }]);
       assert.equal(JobPosting.findByIdAndDelete.mock.calls.length, 1);
       assert.equal(JobPosting.findByIdAndDelete.mock.calls[0].arguments[0], mockJobId);
     });

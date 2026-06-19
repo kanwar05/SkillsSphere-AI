@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { Briefcase, Info, ArrowLeft, Sparkles, TrendingUp } from "lucide-react";
+import { Briefcase, Info, ArrowLeft, Sparkles, TrendingUp, Bookmark } from "lucide-react";
 import Navbar from "../../../shared/components/Navbar";
 import Footer from "../../../shared/components/Footer";
 
@@ -10,7 +10,14 @@ import EmptyState from "../../../shared/components/EmptyState";
 import { JobViewerCard, Pagination } from "../../../shared/components";
 import JobFilters from "../components/JobFilters";
 import JobApplyForm from "../components/JobApplyForm";
-import { getJobs, applyToJob, getMyAppliedJobIds } from "../services/jobService";
+import {
+  getJobs,
+  applyToJob,
+  getMyAppliedJobIds,
+  getSavedJobs,
+  saveJob,
+  unsaveJob,
+} from "../services/jobService";
 import JobCardSkeleton from "../components/JobCardSkeleton";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 import { useToast } from "../../../shared/components/toast/ToastProvider";
@@ -29,16 +36,32 @@ const JobBoardPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [view, setView] = useState("all");
+  const [savedJobIds, setSavedJobIds] = useState(new Set());
+  const [savingJobIds, setSavingJobIds] = useState(new Set());
 
-  const fetchJobs = useCallback(async (currentFilters, page = 1) => {
+  const fetchJobs = useCallback(async (currentFilters, page = 1, currentView = view) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await getJobs(currentFilters, token, page, 6);
+      const response = currentView === "saved"
+        ? await getSavedJobs(token, page, 6)
+        : await getJobs(currentFilters, token, page, 6);
       setJobs(response.jobs || []);
       setCurrentPage(response.currentPage || 1);
       setTotalPages(response.totalPages || 1);
       setTotalCount(response.totalCount || 0);
+
+      if (currentView === "saved") {
+        setSavedJobIds(new Set(response.savedJobIds || []));
+      } else {
+        try {
+          const savedResponse = await getSavedJobs(token, 1, 1);
+          setSavedJobIds(new Set(savedResponse.savedJobIds || []));
+        } catch {
+          // Keep job discovery usable if saved-state lookup fails.
+        }
+      }
 
       // Fetch applied status separately — don't block job loading if it fails
       try {
@@ -52,16 +75,16 @@ const JobBoardPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, view]);
 
   useEffect(() => {
-    fetchJobs(filters, 1);
-  }, [fetchJobs, filters]);
+    fetchJobs(filters, 1, view);
+  }, [fetchJobs, filters, view]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
-      fetchJobs(filters, newPage);
+      fetchJobs(filters, newPage, view);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -72,6 +95,42 @@ const JobBoardPage = () => {
 
   const handleApply = (job) => {
     setApplyModalJob(job);
+  };
+
+  const handleToggleSave = async (job) => {
+    const jobId = job._id || job.id;
+    const wasSaved = savedJobIds.has(jobId);
+    setSavingJobIds((prev) => new Set([...prev, jobId]));
+
+    try {
+      if (wasSaved) {
+        await unsaveJob(jobId, token);
+        setSavedJobIds((prev) => {
+          const next = new Set(prev);
+          next.delete(jobId);
+          return next;
+        });
+        if (view === "saved") {
+          const nextPage = jobs.length === 1 && currentPage > 1
+            ? currentPage - 1
+            : currentPage;
+          await fetchJobs(filters, nextPage, "saved");
+        }
+        toast.success("Job removed from saved jobs.");
+      } else {
+        await saveJob(jobId, token);
+        setSavedJobIds((prev) => new Set([...prev, jobId]));
+        toast.success("Job saved for later.");
+      }
+    } catch (err) {
+      toast.error(err.message || "Could not update saved job. Please try again.");
+    } finally {
+      setSavingJobIds((prev) => {
+        const next = new Set(prev);
+        next.delete(jobId);
+        return next;
+      });
+    }
   };
 
   const handleApplySubmit = async ({ resumeLink, coverNote }) => {
@@ -143,16 +202,48 @@ const JobBoardPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Filters Sidebar */}
           <div className="lg:col-span-1">
-            <JobFilters onFilterChange={handleFilterChange} />
+            {view === "all" ? (
+              <JobFilters onFilterChange={handleFilterChange} />
+            ) : (
+              <div className="sticky top-28 rounded-3xl border border-blue-200 bg-white p-6 shadow-sm dark:border-blue-500/20 dark:bg-slate-900/50">
+                <Bookmark className="mb-3 text-blue-600 dark:text-blue-400" size={28} />
+                <h2 className="font-bold text-gray-900 dark:text-white">Saved Jobs</h2>
+                <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
+                  Your bookmarked opportunities stay here until you remove them.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Job List Area */}
           <div className="lg:col-span-3">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                Available Jobs 
+                {view === "saved" ? "Saved Jobs" : "Available Jobs"}
                 <span className="bg-gray-200 dark:bg-slate-800 text-gray-700 dark:text-gray-300 text-xs px-2.5 py-0.5 rounded-full">{totalCount}</span>
               </h3>
+              <div className="flex rounded-xl border border-gray-200 bg-white p-1 dark:border-white/10 dark:bg-slate-900">
+                {[
+                  ["all", "All Jobs"],
+                  ["saved", "Saved"],
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      setCurrentPage(1);
+                      setView(value);
+                    }}
+                    className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
+                      view === value
+                        ? "bg-blue-600 text-white"
+                        : "text-gray-500 hover:text-blue-600 dark:text-slate-400"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
 
@@ -170,7 +261,9 @@ const JobBoardPage = () => {
                 icon={<Briefcase size={64} className="text-slate-700 mb-4" />}
                 title="No Jobs Found"
                 description={
-                  Object.values(filters).some(v => v)
+                  view === "saved"
+                    ? "You haven't saved any jobs yet. Bookmark an opportunity to find it here."
+                    : Object.values(filters).some(v => v)
                     ? "Try adjusting your filters to see more opportunities."
                     : "There are currently no open job postings. Check back later!"
                 }
@@ -184,6 +277,9 @@ const JobBoardPage = () => {
                     viewerRole="student"
                     onApply={handleApply}
                     isApplied={appliedJobIds.has(job._id || job.id)}
+                    isSaved={savedJobIds.has(job._id || job.id)}
+                    isSaving={savingJobIds.has(job._id || job.id)}
+                    onToggleSave={handleToggleSave}
                   />
                 ))}
               </div>

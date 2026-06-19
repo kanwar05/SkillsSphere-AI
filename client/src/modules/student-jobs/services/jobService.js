@@ -46,6 +46,24 @@ export const getMyAppliedJobIds = async (token) => {
   return apiRequest("/api/jobs/my-applications", { token });
 };
 
+export const saveJob = async (jobId, token) => {
+  return apiRequest(`/api/jobs/${jobId}/save`, {
+    method: "POST",
+    token,
+  });
+};
+
+export const unsaveJob = async (jobId, token) => {
+  return apiRequest(`/api/jobs/${jobId}/save`, {
+    method: "DELETE",
+    token,
+  });
+};
+
+export const getSavedJobs = async (token, page = 1, limit = 10) => {
+  return apiRequest(`/api/jobs/saved?page=${page}&limit=${limit}`, { token });
+};
+
 /**
  * Get current student's applied jobs with full details (paginated)
  * @param {string} token - Auth token

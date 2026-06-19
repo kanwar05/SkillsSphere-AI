@@ -15,6 +15,9 @@ import {
   getSkillTrends as getSkillTrendsService,
   updateApplicationStatus as updateApplicationStatusService,
   updateStudentApplicationStatusService,
+  saveJobForStudent,
+  unsaveJobForStudent,
+  getSavedJobsForStudent,
 } from "./service.js";
 import AppError from "../../utils/AppError.js";
 import asyncHandler from "../../utils/asyncHandler.js";
@@ -223,6 +226,40 @@ export const getRecommendations = asyncHandler(async (req, res) => {
   const { sortBy, limit } = req.query;
   const recommendations = await getJobRecommendations(req.user, { sortBy, limit });
   res.status(200).json(recommendations);
+});
+
+export const saveJob = asyncHandler(async (req, res) => {
+  const jobId = await saveJobForStudent(req.params.id, req.user._id);
+
+  res.status(200).json({
+    success: true,
+    message: "Job saved successfully",
+    jobId,
+    saved: true,
+  });
+});
+
+export const unsaveJob = asyncHandler(async (req, res) => {
+  const jobId = await unsaveJobForStudent(req.params.id, req.user._id);
+
+  res.status(200).json({
+    success: true,
+    message: "Job removed from saved jobs",
+    jobId,
+    saved: false,
+  });
+});
+
+export const getSavedJobs = asyncHandler(async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
+  const result = await getSavedJobsForStudent(req.user._id, { page, limit });
+
+  res.status(200).json({
+    success: true,
+    count: result.jobs.length,
+    ...result,
+  });
 });
 
 /**

@@ -14,6 +14,7 @@ import AnalysisHistory from "../../database/models/AnalysisHistory.js";
 import ClassroomSession from "../../database/models/ClassroomSession.js";
 import JobPosting from "../../database/models/JobPosting.js";
 import RoadmapComment from "../../database/models/RoadmapComment.js";
+import SavedJob from "../../database/models/SavedJob.js";
 import { cascadeDeleteUser } from "../cascadeDelete.js";
 
 test("cascadeDeleteUser sweeps all physical files and databases", async () => {
@@ -65,6 +66,7 @@ test("cascadeDeleteUser sweeps all physical files and databases", async () => {
   mock.method(LearningProgress, "deleteMany", async () => ({ deletedCount: 1 }));
   mock.method(LearningProgress, "updateMany", async () => ({ modifiedCount: 1 }));
   mock.method(JobApplication, "deleteMany", async () => ({ deletedCount: 1 }));
+  mock.method(SavedJob, "deleteMany", async () => ({ deletedCount: 1 }));
   mock.method(CoverLetter, "deleteMany", async () => ({ deletedCount: 1 }));
   mock.method(InterviewSession, "find", () => ({ session: async () => [mockInterviewSession] }));
   mock.method(InterviewSession, "deleteMany", async () => ({ deletedCount: 1 }));
